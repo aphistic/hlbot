@@ -5,6 +5,15 @@ HLBot is an IRC bot that displays what's happening on a Half-Life
 server in IRC.I'm really bad at making docs, so this is what you 
 get for now until someone feels like writing me some good stuff. :)
 
+Before we get into the all the other stuff, I have some people I
+need to thank :)
+---
+|id|rebel from GamesNet for all the suggestions and testing
+darien from GamesNet for suggestions and beta testing
+haggai from OpenProjects for coding/cvs help
+drippy from RogueNet for original testing
+and all the rest of you that've helped out, thanks!
+
 Installation notes are in the INSTALL file.
 
 Commands

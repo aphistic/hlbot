@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.7 2002/07/09 06:45:18 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.8 2002/07/11 16:52:48 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -47,6 +47,7 @@
 
 string sConfigLoc, sCfgHLServ, sCfgRCONPass, sCfgIRCServ;
 string sCfgIRCChan, sCfgIRCNick, sCfgModule, sCfgModuleDirectory;
+string sCfgCommandPrefix;
 int iCfgHLPort, iCfgHLClientPort, iCfgLogPort, iCfgIRCPort;
 int iCfgTimeout, iCfgSendDelay, iCfgAdvertise;
 
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
   } else {
    cout << "Error in command line options.\n\n";
    displayUsage();
-   sexit(1);
+   sexit(1); 
   }
  }
 
@@ -179,12 +180,12 @@ int forkParent() {
  int iRunOptions = 0;
  pid_t childPID;
  string sRecvBuf, sSendBuf, sCurrentLine, sTServer, sTString;
- string sRconNumber;
+ string sRconNumber, sCheckWord;
  vector<string> tokens, lTokens, tTokens, tTokens2, qIRC, qHLCommands;
  fd_set readfds, readfds_orig, treadfds, treadfds_orig;
  struct hostent *he;
  struct sockaddr_in saHLClient, saTConn, saRcon;
- struct sockaddr_un saIPCP;
+ struct sockaddr_un saIPCP, saTIPC;
  struct timeval tv, ttv;
 
  if ((iSockHLClient = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -420,6 +421,17 @@ int forkParent() {
     
     if ((numbytes = send(iSockIRC, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
      perror("send");
+   } else if (tokens[0] == "MODINFOREPLY") {
+    sSendBuf = "PRIVMSG ";
+    sSendBuf += sCfgIRCChan;
+    sSendBuf += " :HLBot ";
+    sSendBuf += tokens[3];
+    sSendBuf += " module ";
+    sSendBuf += tokens[1];
+    sSendBuf += " by ";
+    sSendBuf += tokens[2];
+    sSendBuf += "\n";
+    addQueue(sSendBuf, qIRC);
    } else if (tokens[0] == "DIE") {
     sexit(0);
    }
@@ -448,6 +460,8 @@ int forkParent() {
 #ifdef DEBUG
     cout << "Line: " << sCurrentLine << "\n";
 #endif
+    sCheckWord = "";
+    
     if (lTokens[0] == "PING") {
      sSendBuf = "";
      sSendBuf += "PONG ";
@@ -460,6 +474,14 @@ int forkParent() {
      ircJoin(iSockIRC, sCfgIRCChan.c_str());
     }
     if (lTokens.size() > 3) {
+     sCheckWord = ":";
+     sCheckWord += sCfgCommandPrefix;
+    
+     if (lTokens[3].substr(0, sCheckWord.length()) == sCheckWord) {
+      sCheckWord = lTokens[3].substr(sCfgCommandPrefix.length()+1, lTokens[3].length()-sCfgCommandPrefix.length()+1);
+     } else {
+      sCheckWord = "";
+     }
      if (lTokens[3] == ":\001VERSION\001") {
       tTokens.clear();
       tokenize(lTokens[0], tTokens, "!");
@@ -486,7 +508,7 @@ int forkParent() {
       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
        perror("send");
      }
-     if (lTokens[3] == ":!help") {
+     if (sCheckWord == "help") {
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
       sSendBuf += " :HLBot Help\n";
@@ -499,31 +521,48 @@ int forkParent() {
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
-      sSendBuf += " :!help - ...\n";
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "help - ...\n";
       addQueue(sSendBuf, qIRC);
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
-      sSendBuf += " :!version - Displays HLBot version information.\n";
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "version - Displays HLBot version information.\n";
       addQueue(sSendBuf, qIRC);
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
-      sSendBuf += " :!status [server] [port] - Display the HL server status.\n";
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "modinfo - Display info on the loaded HLBot module.\n";
+      addQueue(sSendBuf, qIRC);
+      
+      sSendBuf = "PRIVMSG ";
+      sSendBuf += sCfgIRCChan;
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "status [server] [port] - Display the HL server status.\n";
       addQueue(sSendBuf, qIRC);
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
-      sSendBuf += " :!players [server] [port] - Display the players on a HL server.\n";
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "players [server] [port] - Display the players on a HL server.\n";
       addQueue(sSendBuf, qIRC);
      
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
-      sSendBuf += " :!s <text> - Display <text> on the HL server.\n";
+      sSendBuf += " :";
+      sSendBuf += sCfgCommandPrefix;
+      sSendBuf += "s <text> - Display <text> on the HL server.\n";
       addQueue(sSendBuf, qIRC);
 
      }
-     if (lTokens[3] == ":!s") {
+     if (sCheckWord == "s") {
       tTokens.clear();
       tokenize(lTokens[0], tTokens, "!");
       
@@ -553,7 +592,7 @@ int forkParent() {
        }
       }
      }
-     if (lTokens[3] == ":!players") {
+     if (sCheckWord == "players") {
       sSendBuf = "\377\377\377\377players";
 
       iTPort = 0;
@@ -600,7 +639,7 @@ int forkParent() {
       
       }
      }
-     if (lTokens[3] == ":!status") {
+     if (sCheckWord == "status") {
       sSendBuf = "\377\377\377\377infostring";
 
       iTPort = 0;
@@ -647,7 +686,7 @@ int forkParent() {
        
       }
      }
-     if (lTokens[3] == ":!version") {
+     if (sCheckWord == "version") {
       sSendBuf = "PRIVMSG ";
       sSendBuf += sCfgIRCChan;
       sSendBuf += " :HLBot ";
@@ -655,6 +694,16 @@ int forkParent() {
       sSendBuf += " [ http://hlbot.erikd.org ]\n";
       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
        perror("send");
+     }
+     if (sCheckWord == "modinfo") {
+      sSendBuf = "\001MODINFO\001";
+      saTIPC.sun_family = AF_UNIX;
+      strcpy(saTIPC.sun_path, IPCSOCKNAMEC);
+
+      if ((numbytes = sendto(iSockIPCP, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTIPC, sizeof(struct sockaddr))) == -1) {
+       perror("sendto");
+     
+      }
      }
      if (lTokens[3] == ":die") {
       sexit(0);
@@ -689,7 +738,7 @@ int forkParent() {
 
 int forkChild() {
  int sockLen, numbytes;
- string sModulePath, sTString, sHLLine;
+ string sSendBuf, sModulePath, sTString, sHLLine;
  vector<string> tokens;
  fd_set readfds, readfds_orig;
  char *szRecvBuf, *szTBufP;
@@ -786,6 +835,30 @@ int forkChild() {
   sexit(1);
  }
 
+ typedef char* (*modVersion_t)();
+ modVersion_t modVersion = (modVersion_t) dlsym(handle, "modVersion");
+ if (!modVersion) {
+  cout << "Cannot load symbol 'modVersion': " << dlerror() << '\n';
+  dlclose(handle);
+  sexit(1);
+ }
+
+ typedef char* (*modAuthor_t)();
+ modAuthor_t modAuthor = (modAuthor_t) dlsym(handle, "modAuthor");
+ if (!modAuthor) {
+  cout << "Cannot load symbol 'modAuthor': " << dlerror() << '\n';
+  dlclose(handle);
+  sexit(1);
+ }
+
+ typedef char* (*modName_t)();
+ modName_t modName = (modVersion_t) dlsym(handle, "modName");
+ if (!modName) {
+  cout << "Cannot load symbol 'modName': " << dlerror() << '\n';
+  dlclose(handle);
+  sexit(1);
+ }
+
  tv.tv_sec = 0;
  tv.tv_usec = 10000;
  
@@ -818,7 +891,8 @@ int forkChild() {
 
     if ((numbytes = sendto(iSockIPCC, szTBufP, strlen(szTBufP), 0, (struct sockaddr *)&saTIPC, sizeof(struct sockaddr))) == -1) 
      perror("sendto");
-   
+    
+    delete [] szTBufP;
    }
   }
   if (FD_ISSET(iSockIPCC, &readfds)) {
@@ -832,12 +906,37 @@ int forkChild() {
    sTString = szRecvBuf;
    delete [] szRecvBuf;
 
-  tokenize(sTString, tokens);
+   tokenize(sTString, tokens, "\001");
 
-  if (tokens[0] == "DIE") {
-   sexit(0);
-  }
+   if (tokens[0] == "DIE") {
+    sexit(0);
+   }
 
+   if (tokens[0] == "MODINFO") {
+    sSendBuf = "\001MODINFOREPLY\001";
+    szTBufP = modVersion();
+    sSendBuf += szTBufP;
+    delete [] szTBufP;
+    
+    sSendBuf += "\001";
+    szTBufP = modAuthor();
+    sSendBuf += szTBufP;
+    delete [] szTBufP;
+ 
+    sSendBuf += "\001";
+    szTBufP = modName();
+    sSendBuf += szTBufP;
+    delete [] szTBufP;
+
+    sSendBuf += "\001";
+ 
+    saTIPC.sun_family = AF_UNIX;
+    strcpy(saTIPC.sun_path, IPCSOCKNAMEP);
+
+    if ((numbytes = sendto(iSockIPCC, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTIPC, sizeof(struct sockaddr))) == -1) {
+     perror("sendto");
+    }
+   }
    
   } else {
    tv.tv_sec = 0;
@@ -910,6 +1009,8 @@ bool readConfig(string sConfigFile) {
     sCfgModule = tokens[1];
    } else if (tokens[0] == "ModuleDirectory") {
     sCfgModuleDirectory = tokens[1];
+   } else if (tokens[0] == "CommandPrefix") {
+    sCfgCommandPrefix = tokens[1];
    } else if (tokens[0] == "Advertise") {
     iCfgAdvertise = atoi(tokens[1].c_str());
    }

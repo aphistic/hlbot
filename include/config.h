@@ -2,7 +2,7 @@
 //
 // config.h - HLBot compile configuration
 //
-// $Id: config.h,v 1.6 2002/07/09 06:35:21 yodatoad Exp $
+// $Id: config.h,v 1.7 2002/07/11 16:52:48 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -34,6 +34,6 @@
 #define PIDFILE "hlbot.pid"
 #define IPCSOCKNAMEP "/tmp/ipcparent"
 #define IPCSOCKNAMEC "/tmp/ipcchild"
-#define HLBOTVERSION "v0.3.0b"
+#define HLBOTVERSION "v0.3.0"
 
 #endif
