@@ -1,0 +1,14 @@
+HLBot
+Copyright (C) 2002  Erik Davidson
+
+HLBot is an IRC bot that displays what's happening on a Half-Life server
+in real time.  It now also allows for IRC to Half-Life chat.
+
+Currently the only Half-Life game supported is Counter-Strike, but eventually
+I hope to add support for TFC, plain Half-Life and any other mods people request.
+
+Installation notes are in the INSTALL file.
+
+HLBot is released under the GNU Public License, read LICENSE for more info.
+If you make any changes to HLBot I'd like it if you could send it to me at
+erik@erikd.org.  I want to see what kinda stuff people are doing with my baby. :)

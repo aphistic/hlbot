@@ -1,0 +1,9 @@
+v0.2.0
+------
+ - First public release.
+ - Fixed bug that crashes csbot when users have spaces in their nickname.
+ - Added IRC to HL chat via RCON.
+
+v0.1.2
+------
+ - First private release.

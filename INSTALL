@@ -1,0 +1,21 @@
+HLBot Installation
+------------------
+
+Installation is really simple at the moment, just a few steps are involved:
+
+1. Check include/config.h to make sure CONFIGLOC is a path to where you want
+   the config file for HLBot stored.
+2. make
+3. Copy hlbot.cfg to the location you specified in CONFIGLOC and modify as 
+   needed
+4. Copy hlbot to and location you'd like (or even leave it where it is)
+5. Add the following 4 lines to your server.cfg on your Half-Life server:
+   
+   logaddress <ip of server where hlbot is running> <port hlbot listens on>
+   mp_logmessages 1
+   mp_logdetail 3
+   log on
+   
+6. Run hlbot
+
+You're all set!
