@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.9 2002/07/15 04:32:27 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.10 2002/07/15 05:43:29 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
 
 int forkParent() {
  char *szRecvBuf, *szTBufP, *szHLRecvBuf, *pkt;
- int numbytes, iLoopTemp, iAddrLen;
+ int numbytes, iLoopTemp, iCounter, iAddrLen;
  int iSendDelayCounter = 0;
  int iTPort = 0;
  int iRunOptions = 0;
@@ -320,19 +320,42 @@ int forkParent() {
        sSendBuf += sCfgIRCChan;
        sSendBuf += " :No players on the server.\n";
        addQueue(sSendBuf, qIRC);
+      
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += qHLCommands[0].c_str()+1;
+       sSendBuf += " :No players on the server.\n";
+       addQueue(sSendBuf, qIRC);
       } else {
        sTString = szTBufP;
        delete [] szTBufP;
       
        tTokens.clear();
        tokenize(sTString, tTokens, "\\");
+       iCounter = 0;
        for (iLoopTemp = 0; (unsigned int)iLoopTemp < tTokens.size()-1; iLoopTemp += 2) {
-	sSendBuf = "PRIVMSG ";
-	sSendBuf += qHLCommands[0].c_str()+1;
-	sSendBuf += " :";
-	sSendBuf += tTokens[iLoopTemp];
-	sSendBuf += " - ";
-	sSendBuf += tTokens[iLoopTemp+1];
+	if (iCounter == 0) {
+	 sSendBuf = "PRIVMSG ";
+	 sSendBuf += qHLCommands[0].c_str()+1;
+	 sSendBuf += " :";
+	}
+	if (iCounter < 9) {
+	 sSendBuf += tTokens[iLoopTemp+1];
+	 if (iCounter < 8 && (unsigned int)iLoopTemp < tTokens.size()-2) {
+	  sSendBuf += " ::: ";
+	 } else {
+	  sSendBuf += " ";
+	 }
+	 iCounter++;
+	} else {
+	 sSendBuf += "::: ";
+	 sSendBuf += tTokens[iLoopTemp+1];
+	 sSendBuf += "\n";
+	 addQueue(sSendBuf, qIRC);
+	 sSendBuf = "";
+	 iCounter = 0;
+	}
+       }
+       if (!sSendBuf.empty()) {
 	sSendBuf += "\n";
 	addQueue(sSendBuf, qIRC);
        }
@@ -350,41 +373,26 @@ int forkParent() {
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += qHLCommands[0].c_str()+1;
-      sSendBuf += " :Server Name: ";
+      sSendBuf += " :";
       sSendBuf += tTokens[17];
-      sSendBuf += "\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += qHLCommands[0].c_str()+1;
-      sSendBuf += " :Server Location: ";
+      sSendBuf += " @ ";
       sSendBuf += qHLServerHost[0];
       sSendBuf += "\n";
       addQueue(sSendBuf, qIRC);
 
       sSendBuf = "PRIVMSG ";
       sSendBuf += qHLCommands[0].c_str()+1;
-      sSendBuf += " :Mod: ";
+      sSendBuf += " :Playing ";
       sSendBuf += tTokens[15];
-      sSendBuf += "\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += qHLCommands[0].c_str()+1;
-      sSendBuf += " :Current Map: ";
+      sSendBuf += " on map ";
       sSendBuf += tTokens[19];
-      sSendBuf += "\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += qHLCommands[0].c_str()+1;
-      sSendBuf += " :Players: ";
+      sSendBuf += " with ";
       sSendBuf += tTokens[5];
       sSendBuf += "/";
       sSendBuf += tTokens[11];
-      sSendBuf += "\n";
+      sSendBuf += " players.\n";
       addQueue(sSendBuf, qIRC);
-     
+
      }
      delQueueFirst(qHLServerHost);
      delQueueFirst(qHLCommands);
