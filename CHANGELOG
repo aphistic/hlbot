@@ -1,3 +1,9 @@
+v0.2.1
+------
+ - Added a timeout to the RCON challenge.
+ - Made the console less verbose (only required info is displayed, no debugging
+   info)
+
 v0.2.0
 ------
  - First public release.

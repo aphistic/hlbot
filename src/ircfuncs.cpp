@@ -2,7 +2,7 @@
 //
 // ircfuncs.cpp - IRC functions
 //
-// $Id: ircfuncs.cpp,v 1.1 2002/06/18 00:17:45 yodatoad Exp $
+// $Id: ircfuncs.cpp,v 1.2 2002/06/18 17:57:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -42,7 +42,5 @@ char* getNickname(char* szBuffer) {
   szBuffer++;
  }
 
- printf("Nick: %s\n", ret);
- 
  return ret;
 }

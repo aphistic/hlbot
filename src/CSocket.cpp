@@ -2,7 +2,7 @@
 //
 // CSocket.cpp - Socket class
 //
-// $Id: CSocket.cpp,v 1.1 2002/06/18 00:17:45 yodatoad Exp $
+// $Id: CSocket.cpp,v 1.2 2002/06/18 17:57:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -35,11 +35,9 @@ CSocket::CSocket() {
  iSockfd = 0;
  iSockType = 0;
  iTotalSocks++;
- //printf("Total Socks: %d\n", iTotalSocks);
 }
 
 CSocket::~CSocket() {
- //printf("I'm in ~CSocket\n");
  Disconnect();
 }
 
@@ -73,7 +71,6 @@ bool CSocket::Connect(char* szServerAddress, int iPort) {
  if (iSockfd > iHighestSock)
   iHighestSock = iSockfd;
  iSockType = 1;
- //printf("Highest Sock: %d\n", iHighestSock);
  return true;
 }
 
@@ -119,7 +116,6 @@ bool CSocket::BindDGRAM(int iPort) {
  
  if (iSockfd > iHighestSock)
   iHighestSock = iSockfd;
- //printf("Highest Sock: %d\n", iHighestSock);
  return true;
 }
 
@@ -136,7 +132,6 @@ void CSocket::Disconnect() {
  if (iSockType == 3) {
   unlink(szIPCSockName);
  }
- //printf("Socket Closed (CSocket - %d)\n", iSockfd);
 }
 
 int CSocket::Sendto(char* szAddress, int iPort, char* szBuffer) {

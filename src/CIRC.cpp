@@ -2,7 +2,7 @@
 //
 // CIRC.cpp - IRC Server class
 //
-// $Id: CIRC.cpp,v 1.1 2002/06/18 00:17:45 yodatoad Exp $
+// $Id: CIRC.cpp,v 1.2 2002/06/18 17:57:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -42,19 +42,16 @@ bool CIRC::Connect(char* szServer, int iPort, char* szNickname) {
  tRecBufP = new char[MAXDATASIZE];
  
  if (IRCSocket.Connect(szServer, iPort)) {
-  printf("Connected to server (%s:%d)\n", szServer, iPort);
  } else {
-  printf("Failed to connect to server (%s:%d)\n", szServer, iPort);
+  return false;
  }
 
- printf("Logging in.\n");
  sprintf(tSendBufP, "NICK %s\n", szNickname);
  if (IRCSocket.Send(tSendBufP, strlen(tSendBufP), 0) == -1)
   perror("send");
  sprintf(tSendBufP, "USER csbot 8 * :CSBot %s\n", VERSION);
  if (IRCSocket.Send(tSendBufP, strlen(tSendBufP), 0) == -1)
   perror("send");
- printf("Socket Connected (Waiting for Server OK)\n");
 
  delete [] tSendBufP, tRecBufP;
  return true;
