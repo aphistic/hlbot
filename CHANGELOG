@@ -1,3 +1,7 @@
+v0.3.1
+------
+ - Added option to not show player connects.
+
 v0.3.0
 ------
  - Added IRC reconnect if it gets disconnected.

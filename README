@@ -8,13 +8,16 @@ get for now until someone feels like writing me some good stuff. :)
 Before we get into the all the other stuff, I have some people I
 need to thank :)
 ---
+darien from GamesNet for all the suggestions and testing
 |id|rebel from GamesNet for all the suggestions and testing
-darien from GamesNet for suggestions and beta testing
 haggai from OpenProjects for coding/cvs help
 drippy from RogueNet for original testing
 and all the rest of you that've helped out, thanks!
 
 Installation notes are in the INSTALL file.
+
+If any of you are good at writing docs I'd appreciate some help,
+as you can see I'm not too good. ;)
 
 Commands
 --------
@@ -28,6 +31,13 @@ Type these in IRC:
 !version - Displays HLBot's version.
 !s <text> - Displays <text> on the CS Server (RCON required)
 
+Contacting the author(s)
+------------------------
+IRC: irc.erikd.org in #phoenix (my nick is aphistic)
+IRC: irc.gamesnet.net in #hlbot (my nick is aphistic)
+Email: erik@erikd.org
+Web: http://hlbot.erikd.org
+ 
 HLBot is released under the GNU Public License, read LICENSE for more 
 info. If you make any changes to HLBot I'd like it if you could send 
 it to me at erik@erikd.org.  I want to see what kinda stuff people are 

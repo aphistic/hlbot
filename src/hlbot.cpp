@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.14 2002/07/20 01:52:18 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.15 2002/07/22 18:27:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -1063,6 +1063,8 @@ bool readConfig(string sConfigFile) {
     sCfgCommandPrefix = tokens[1];
    } else if (tokens[0] == "HideConnectIP") {
     iModOptions |= HLBOT_NOIPS;
+   } else if (tokens[0] == "HideConnects") {
+    iModOptions |= HLBOT_NOCONNECTS;
    } else if (tokens[0] == "NoColors") {
     iModOptions |= HLBOT_NOCOLOR;
    } else if (tokens[0] == "Advertise") {

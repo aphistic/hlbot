@@ -2,7 +2,7 @@
 //
 // hlbot.h - Main header for HLBot
 //
-// $Id: hlbot.h,v 1.2 2002/07/20 01:51:33 yodatoad Exp $
+// $Id: hlbot.h,v 1.3 2002/07/22 18:27:02 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -25,8 +25,9 @@
 
 #include <vector>
 
-#define HLBOT_NOIPS	0x0001
-#define HLBOT_NOCOLOR	0x0002
+#define HLBOT_NOIPS		0x0001
+#define HLBOT_NOCOLOR		0x0002
+#define HLBOT_NOCONNECTS	0x0004
 
 bool readConfig(string);
 void displayUsage();

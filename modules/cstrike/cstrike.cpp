@@ -2,7 +2,7 @@
 //
 // cstrike.cpp - Counter-Strike HLBot module
 //
-// $Id: cstrike.cpp,v 1.4 2002/07/20 01:55:33 yodatoad Exp $
+// $Id: cstrike.cpp,v 1.5 2002/07/22 18:27:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -244,7 +244,7 @@ extern "C" char* parseLogLine(const char *argument) {
     playerInfo[3] = "T";
    tokens3.clear();
    tokenize(tokens2[1], tokens3);
-   if (tokens3[0] == "connected,") {
+   if (tokens3[0] == "connected," && !(iOptions & HLBOT_NOCONNECTS)) {
     sSendBuf = "\001SAY\001";
     if (!(iOptions & HLBOT_NOCOLOR))
      sSendBuf += "\00314";
