@@ -2,7 +2,7 @@
 // 
 // CHLServ.cpp - Half-Life server class
 //
-// $Id: CHLServ.cpp,v 1.2 2002/06/18 17:55:09 yodatoad Exp $
+// $Id: CHLServ.cpp,v 1.3 2002/06/19 15:31:49 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -63,37 +63,35 @@ bool CHLServ::ConnectRcon (char* szRconPassParm, char* szServerAddress, int iPor
  }
 
  FD_ZERO(&readfds_orig);
- FD_SET(HLSocket.iHighestSock, &readfds_orig);
+ FD_SET(HLSocket.iSockfd, &readfds_orig);
  
- tv.tv_sec = 1;
+ tv.tv_sec = 5;
  tv.tv_usec = 0;
 
  while (1) {
   bcopy(&readfds_orig, &readfds, sizeof(&readfds_orig));
   select(HLSocket.iHighestSock+1, &readfds, NULL, NULL, &tv);
-  if (FD_ISSET(HLSocket.iHighestSock, &readfds)) {
-   
+  if (FD_ISSET(HLSocket.iSockfd, &readfds)) {
    if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
     perror("recvfrom");
     return false;
    }
+   if (wordExists(szRecvBuf, 3, ' ')) {
+    rconId = getWord(szRecvBuf, 3, ' ');
+    strcpy(szRconId, rconId);
+   } else {
+    return false;
+   }
+
+   delete [] rconId;
+   delete [] szSendBuf;
+   delete [] szRecvBuf;
+
+   return true;
   } else {
    return false;
   }
  }
- 
- if (wordExists(szRecvBuf, 3, ' ')) {
-  rconId = getWord(szRecvBuf, 3, ' ');
-  strcpy(szRconId, rconId);
- } else {
-  return false;
- }
-
- delete [] rconId;
- delete [] szSendBuf;
- delete [] szRecvBuf;
-
- return true;
 }
 
 bool CHLServ::SendRcon(char* szRconCommand, char* szServerAddress, int iPort) {
