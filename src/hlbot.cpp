@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.8 2002/07/11 16:52:48 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.9 2002/07/15 04:32:27 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -181,7 +181,7 @@ int forkParent() {
  pid_t childPID;
  string sRecvBuf, sSendBuf, sCurrentLine, sTServer, sTString;
  string sRconNumber, sCheckWord;
- vector<string> tokens, lTokens, tTokens, tTokens2, qIRC, qHLCommands;
+ vector<string> tokens, lTokens, tTokens, tTokens2, qIRC, qHLCommands, qHLServerHost;
  fd_set readfds, readfds_orig, treadfds, treadfds_orig;
  struct hostent *he;
  struct sockaddr_in saHLClient, saTConn, saRcon;
@@ -358,7 +358,7 @@ int forkParent() {
       sSendBuf = "PRIVMSG ";
       sSendBuf += qHLCommands[0].c_str()+1;
       sSendBuf += " :Server Location: ";
-      sSendBuf += tTokens[3];
+      sSendBuf += qHLServerHost[0];
       sSendBuf += "\n";
       addQueue(sSendBuf, qIRC);
 
@@ -386,6 +386,7 @@ int forkParent() {
       addQueue(sSendBuf, qIRC);
      
      }
+     delQueueFirst(qHLServerHost);
      delQueueFirst(qHLCommands);
     }
    } else if (pkt[4] == 'l') {
@@ -439,278 +440,297 @@ int forkParent() {
   if (FD_ISSET(iSockIRC, &readfds)) {
    szRecvBuf = new char[MAXRECVSIZE];
    memset(szRecvBuf, '\0', MAXRECVSIZE);
-   if ((numbytes = recv(iSockIRC, szRecvBuf, MAXRECVSIZE-1, 0)) == 0) {
+   if ((numbytes = recv(iSockIRC, szRecvBuf, MAXRECVSIZE-1, 0)) == -1) {
     delete [] szRecvBuf;
     close(iSockIRC);
     sexit(1);
    }
 
-   sRecvBuf = "";
-   sRecvBuf = szRecvBuf;
-   delete [] szRecvBuf;
-   strReplace(sRecvBuf, "\r", "");
-
-   tokens.clear();
-   tokenize(sRecvBuf, tokens, "\n");
-   iLoopTemp = 0;
-   while ((unsigned int)iLoopTemp < tokens.size()) {
-    sCurrentLine = tokens[iLoopTemp];
-    lTokens.clear();
-    tokenize(sCurrentLine, lTokens);
+   if (numbytes == 0) {
+    close(iSockIRC);
 #ifdef DEBUG
-    cout << "Line: " << sCurrentLine << "\n";
+    //perror
+    cout << "Disconnected.\n";
 #endif
-    sCheckWord = "";
-    
-    if (lTokens[0] == "PING") {
-     sSendBuf = "";
-     sSendBuf += "PONG ";
-     sSendBuf += lTokens[1];
-     sSendBuf += "\n";
-     if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
-      perror("send");
+    if ((iSockIRC = sockConnect(sCfgIRCServ.c_str(), iCfgIRCPort)) < 0) {
+     cout << "\nError reconnecting to IRC server: " << sCfgIRCServ << ":" << iCfgIRCPort << "\n";
+     sexit(1);
     }
-    if (lTokens[1] == "001") {
-     ircJoin(iSockIRC, sCfgIRCChan.c_str());
+    if (iSockIRC > iHighestSock)
+     iHighestSock = iSockIRC;
+    if (!ircConnect(iSockIRC, sCfgIRCNick.c_str())) {
+     cout << "\nError reconneting to IRC server: "  << sCfgIRCServ << ":" << iCfgIRCPort << "\n";
+     sexit(1);
     }
-    if (lTokens.size() > 3) {
-     sCheckWord = ":";
-     sCheckWord += sCfgCommandPrefix;
+   } else {
     
-     if (lTokens[3].substr(0, sCheckWord.length()) == sCheckWord) {
-      sCheckWord = lTokens[3].substr(sCfgCommandPrefix.length()+1, lTokens[3].length()-sCfgCommandPrefix.length()+1);
-     } else {
-      sCheckWord = "";
-     }
-     if (lTokens[3] == ":\001VERSION\001") {
-      tTokens.clear();
-      tokenize(lTokens[0], tTokens, "!");
+    sRecvBuf = "";
+    sRecvBuf = szRecvBuf;
+    delete [] szRecvBuf;
+    strReplace(sRecvBuf, "\r", "");
+ 
+    tokens.clear();
+    tokenize(sRecvBuf, tokens, "\n");
+    iLoopTemp = 0;
+    while ((unsigned int)iLoopTemp < tokens.size()) {
+     sCurrentLine = tokens[iLoopTemp];
+     lTokens.clear();
+     tokenize(sCurrentLine, lTokens);
+#ifdef DEBUG
+     cout << "Line: " << sCurrentLine << "\n";
+#endif
+     sCheckWord = "";
+     
+     if (lTokens[0] == "PING") {
       sSendBuf = "";
-      sSendBuf += "NOTICE ";
-      sSendBuf += tTokens[0].c_str()+1;
-      sSendBuf += " :\001VERSION HLBot ";
-      sSendBuf += HLBOTVERSION;
-      sSendBuf += " [http://hlbot.erikd.org]\001\n";
-      if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
-       perror("send");
-     }
-     if (lTokens[3] == ":\001PING") {
-      tTokens.clear();
-      tokenize(lTokens[0], tTokens, "!");
-      sSendBuf = "";
-      sSendBuf += "NOTICE ";
-      sSendBuf += tTokens[0].c_str()+1;
-      sSendBuf += " :\001PING ";
-      sSendBuf += lTokens[4];
-      sSendBuf += " ";
-      sSendBuf += lTokens[5];
+      sSendBuf += "PONG ";
+      sSendBuf += lTokens[1];
       sSendBuf += "\n";
       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
        perror("send");
      }
-     if (sCheckWord == "help") {
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :HLBot Help\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :----------\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "help - ...\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "version - Displays HLBot version information.\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "modinfo - Display info on the loaded HLBot module.\n";
-      addQueue(sSendBuf, qIRC);
-      
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "status [server] [port] - Display the HL server status.\n";
-      addQueue(sSendBuf, qIRC);
-
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "players [server] [port] - Display the players on a HL server.\n";
-      addQueue(sSendBuf, qIRC);
-     
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :";
-      sSendBuf += sCfgCommandPrefix;
-      sSendBuf += "s <text> - Display <text> on the HL server.\n";
-      addQueue(sSendBuf, qIRC);
-
+     if (lTokens[1] == "001") {
+      ircJoin(iSockIRC, sCfgIRCChan.c_str());
      }
-     if (sCheckWord == "s") {
-      tTokens.clear();
-      tokenize(lTokens[0], tTokens, "!");
-      
-      sSendBuf = "\377\377\377\377rcon ";
-      sSendBuf += sRconNumber;
-      sSendBuf += " \"";
-      sSendBuf += sCfgRCONPass;
-      sSendBuf += "\" say (IRC)<";
-      sSendBuf += tTokens[0].c_str()+1;
-      sSendBuf += "> ";
-      for(iLoopTemp = 4; (unsigned int)iLoopTemp < lTokens.size(); iLoopTemp++) {
-       sSendBuf += lTokens[iLoopTemp];
+     if (lTokens.size() > 3) {
+      sCheckWord = ":";
+      sCheckWord += sCfgCommandPrefix;
+     
+      if (lTokens[3].substr(0, sCheckWord.length()) == sCheckWord) {
+       sCheckWord = lTokens[3].substr(sCfgCommandPrefix.length()+1, lTokens[3].length()-sCfgCommandPrefix.length()+1);
+      } else {
+       sCheckWord = "";
+      }
+      if (lTokens[3] == ":\001VERSION\001") {
+       tTokens.clear();
+       tokenize(lTokens[0], tTokens, "!");
+       sSendBuf = "";
+       sSendBuf += "NOTICE ";
+       sSendBuf += tTokens[0].c_str()+1;
+       sSendBuf += " :\001VERSION HLBot ";
+       sSendBuf += HLBOTVERSION;
+       sSendBuf += " [http://hlbot.erikd.org]\001\n";
+       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
+        perror("send");
+      }
+      if (lTokens[3] == ":\001PING") {
+       tTokens.clear();
+       tokenize(lTokens[0], tTokens, "!");
+       sSendBuf = "";
+       sSendBuf += "NOTICE ";
+       sSendBuf += tTokens[0].c_str()+1;
+       sSendBuf += " :\001PING ";
+       sSendBuf += lTokens[4];
        sSendBuf += " ";
+       sSendBuf += lTokens[5];
+       sSendBuf += "\n";
+       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
+        perror("send");
       }
-     
-      if ((he = gethostbyname(sCfgHLServ.c_str())) == NULL) {
-       perror("gethostbyname");
-      } else {
-
-       saRcon.sin_family = AF_INET;
-       saRcon.sin_port = htons(iCfgHLPort);
-       saRcon.sin_addr = *((struct in_addr *)he->h_addr);
-       memset(&(saRcon.sin_zero), '\0', 8);
+      if (sCheckWord == "help") {
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :HLBot Help\n";
+       addQueue(sSendBuf, qIRC);
+ 
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :----------\n";
+       addQueue(sSendBuf, qIRC);
+ 
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "help - ...\n";
+       addQueue(sSendBuf, qIRC);
+ 
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "version - Displays HLBot version information.\n";
+       addQueue(sSendBuf, qIRC);
+ 
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "modinfo - Display info on the loaded HLBot module.\n";
+       addQueue(sSendBuf, qIRC);
        
-       if ((numbytes = sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saRcon, sizeof(struct sockaddr))) == -1) {
-	perror("sendto");
-       }
-      }
-     }
-     if (sCheckWord == "players") {
-      sSendBuf = "\377\377\377\377players";
-
-      iTPort = 0;
-      sTServer = "";
-
-      switch (lTokens.size()) {
-       case 4:
-	iTPort = iCfgHLPort;
-	sTServer = sCfgHLServ;
-	iRunOptions = 2;
-	break;
-       case 5:
-	iTPort = iCfgHLPort;
-	sTServer = lTokens[4];
-	iRunOptions = 2;
-	break;
-       case 6:
-	iTPort = atoi(lTokens[5].c_str());
-	sTServer = lTokens[4];
-	iRunOptions = 2;
-	break;
-      }
-     
-      if ((he = gethostbyname(sTServer.c_str())) == NULL) {
-       perror("gethostbyname");
-       cout << "Error Connecting\n";
-      } else {
-
-       saTConn.sin_family = AF_INET;
-       saTConn.sin_port = htons(iTPort);
-       saTConn.sin_addr = *((struct in_addr *)he->h_addr);
-       memset(&(saTConn.sin_zero), '\0', 8);
-       
-       if ((numbytes == sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTConn, sizeof(struct sockaddr))) == -1) {
-	perror("sendto");
-        cout << "Error Connecting\n";
-       }
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "status [server] [port] - Display the HL server status.\n";
+       addQueue(sSendBuf, qIRC);
+ 
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "players [server] [port] - Display the players on a HL server.\n";
+       addQueue(sSendBuf, qIRC);
       
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :";
+       sSendBuf += sCfgCommandPrefix;
+       sSendBuf += "s <text> - Display <text> on the HL server.\n";
+       addQueue(sSendBuf, qIRC);
+ 
+      }
+      if (sCheckWord == "s") {
        tTokens.clear();
-       sTString = "D";
        tokenize(lTokens[0], tTokens, "!");
-       sTString += tTokens[0].c_str()+1;
-       addQueue(sTString, qHLCommands);
+       
+       sSendBuf = "\377\377\377\377rcon ";
+       sSendBuf += sRconNumber;
+       sSendBuf += " \"";
+       sSendBuf += sCfgRCONPass;
+       sSendBuf += "\" say (IRC)<";
+       sSendBuf += tTokens[0].c_str()+1;
+       sSendBuf += "> ";
+       for(iLoopTemp = 4; (unsigned int)iLoopTemp < lTokens.size(); iLoopTemp++) {
+        sSendBuf += lTokens[iLoopTemp];
+        sSendBuf += " ";
+       }
       
+       if ((he = gethostbyname(sCfgHLServ.c_str())) == NULL) {
+        perror("gethostbyname");
+       } else {
+ 
+        saRcon.sin_family = AF_INET;
+        saRcon.sin_port = htons(iCfgHLPort);
+        saRcon.sin_addr = *((struct in_addr *)he->h_addr);
+        memset(&(saRcon.sin_zero), '\0', 8);
+        
+        if ((numbytes = sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saRcon, sizeof(struct sockaddr))) == -1) {
+         perror("sendto");
+        }
+       }
       }
-     }
-     if (sCheckWord == "status") {
-      sSendBuf = "\377\377\377\377infostring";
+      if (sCheckWord == "players") {
+       sSendBuf = "\377\377\377\377players";
 
-      iTPort = 0;
-      sTServer = "";
+       iTPort = 0;
+       sTServer = "";
 
-      switch (lTokens.size()) {
-       case 4:
-        iTPort = iCfgHLPort;
-        sTServer = sCfgHLServ;
-        iRunOptions = 2;
-        break;
-       case 5:
-        iTPort = iCfgHLPort;
-        sTServer = lTokens[4];
-        iRunOptions = 2;
-        break;
-       case 6:
-        iTPort = atoi(lTokens[5].c_str());
-        sTServer = lTokens[4];
-        iRunOptions = 2;
-        break;
+       switch (lTokens.size()) {
+        case 4:
+ 	 iTPort = iCfgHLPort;
+ 	 sTServer = sCfgHLServ;
+ 	 iRunOptions = 2;
+ 	 break;
+        case 5:
+ 	 iTPort = iCfgHLPort;
+ 	 sTServer = lTokens[4];
+ 	 iRunOptions = 2;
+ 	 break;
+        case 6:
+ 	 iTPort = atoi(lTokens[5].c_str());
+ 	 sTServer = lTokens[4];
+ 	 iRunOptions = 2;
+ 	 break;
+       }
+     
+       if ((he = gethostbyname(sTServer.c_str())) == NULL) {
+        perror("gethostbyname");
+        cout << "Error Connecting\n";
+       } else {
+ 
+        saTConn.sin_family = AF_INET;
+        saTConn.sin_port = htons(iTPort);
+        saTConn.sin_addr = *((struct in_addr *)he->h_addr);
+        memset(&(saTConn.sin_zero), '\0', 8);
+        
+        if ((numbytes == sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTConn, sizeof(struct sockaddr))) == -1) {
+ 	 perror("sendto");
+         cout << "Error Connecting\n";
+        }
+      
+        tTokens.clear();
+        sTString = "D";
+        tokenize(lTokens[0], tTokens, "!");
+        sTString += tTokens[0].c_str()+1;
+        addQueue(sTString, qHLCommands);
+      
+       }
       }
-
-      if ((he = gethostbyname(sTServer.c_str())) == NULL) {
-       perror("gethostbyname");
-       cout << "Error Connecting\n";
-      } else {
-
-       saTConn.sin_family = AF_INET;
-       saTConn.sin_port = htons(iTPort);
-       saTConn.sin_addr = *((struct in_addr *)he->h_addr);
-       memset(&(saTConn.sin_zero), '\0', 8);
-
-       if ((numbytes == sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTConn, sizeof(struct sockaddr))) == -1) {
+      if (sCheckWord == "status") {
+       sSendBuf = "\377\377\377\377infostring";
+ 
+       iTPort = 0;
+       sTServer = "";
+ 
+       switch (lTokens.size()) {
+        case 4:
+         iTPort = iCfgHLPort;
+         sTServer = sCfgHLServ;
+         iRunOptions = 2;
+         break;
+        case 5:
+         iTPort = iCfgHLPort;
+         sTServer = lTokens[4];
+         iRunOptions = 2;
+         break;
+        case 6:
+         iTPort = atoi(lTokens[5].c_str());
+         sTServer = lTokens[4];
+         iRunOptions = 2;
+         break;
+       }
+ 
+       if ((he = gethostbyname(sTServer.c_str())) == NULL) {
+        perror("gethostbyname");
+        cout << "Error Connecting\n";
+       } else {
+ 
+        saTConn.sin_family = AF_INET;
+        saTConn.sin_port = htons(iTPort);
+        saTConn.sin_addr = *((struct in_addr *)he->h_addr);
+        memset(&(saTConn.sin_zero), '\0', 8);
+ 
+        if ((numbytes == sendto(iSockHLClient, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTConn, sizeof(struct sockaddr))) == -1) {
+         perror("sendto");
+         cout << "Error Connecting\n";
+        }
+        
+        tTokens.clear();
+        sTString = "i";
+        tokenize(lTokens[0], tTokens, "!");
+        sTString += tTokens[0].c_str()+1;
+        addQueue(sTString, qHLCommands);
+        addQueue(sTServer, qHLServerHost);
+       }
+      }
+      if (sCheckWord == "version") {
+       sSendBuf = "PRIVMSG ";
+       sSendBuf += sCfgIRCChan;
+       sSendBuf += " :HLBot ";
+       sSendBuf += HLBOTVERSION;
+       sSendBuf += " [ http://hlbot.erikd.org ]\n";
+       if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
+        perror("send");
+      }
+      if (sCheckWord == "modinfo") {
+       sSendBuf = "\001MODINFO\001";
+       saTIPC.sun_family = AF_UNIX;
+       strcpy(saTIPC.sun_path, IPCSOCKNAMEC);
+ 
+       if ((numbytes = sendto(iSockIPCP, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTIPC, sizeof(struct sockaddr))) == -1) {
         perror("sendto");
-        cout << "Error Connecting\n";
+      
        }
-       
-       tTokens.clear();
-       sTString = "i";
-       tokenize(lTokens[0], tTokens, "!");
-       sTString += tTokens[0].c_str()+1;
-       addQueue(sTString, qHLCommands);
-       
+      }
+      if (lTokens[3] == ":die") {
+       sexit(0);
       }
      }
-     if (sCheckWord == "version") {
-      sSendBuf = "PRIVMSG ";
-      sSendBuf += sCfgIRCChan;
-      sSendBuf += " :HLBot ";
-      sSendBuf += HLBOTVERSION;
-      sSendBuf += " [ http://hlbot.erikd.org ]\n";
-      if ((numbytes = send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0)) == -1)
-       perror("send");
-     }
-     if (sCheckWord == "modinfo") {
-      sSendBuf = "\001MODINFO\001";
-      saTIPC.sun_family = AF_UNIX;
-      strcpy(saTIPC.sun_path, IPCSOCKNAMEC);
-
-      if ((numbytes = sendto(iSockIPCP, sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0, (struct sockaddr *)&saTIPC, sizeof(struct sockaddr))) == -1) {
-       perror("sendto");
-     
-      }
-     }
-     if (lTokens[3] == ":die") {
-      sexit(0);
-     }
+     iLoopTemp++;
     }
-    iLoopTemp++;
-   }
+   } // End disconnected if statement
   } else {
    tv.tv_sec = 0;
    tv.tv_usec = 10000;
@@ -720,7 +740,7 @@ int forkParent() {
       perror("send");
      delQueueFirst(qIRC);
     } 
-    iSendDelayCounter = 0;
+     iSendDelayCounter = 0;
    } else {
     iSendDelayCounter++;
    }
