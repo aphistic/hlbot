@@ -2,7 +2,7 @@
 // 
 // CHLServ.cpp - Half-Life server class
 //
-// $Id: CHLServ.cpp,v 1.3 2002/06/19 15:31:49 yodatoad Exp $
+// $Id: CHLServ.cpp,v 1.4 2002/06/22 07:21:09 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -65,7 +65,7 @@ bool CHLServ::ConnectRcon (char* szRconPassParm, char* szServerAddress, int iPor
  FD_ZERO(&readfds_orig);
  FD_SET(HLSocket.iSockfd, &readfds_orig);
  
- tv.tv_sec = 5;
+ tv.tv_sec = SERVERTIMEOUT;
  tv.tv_usec = 0;
 
  while (1) {
@@ -131,9 +131,14 @@ char* CHLServ::GetServerInfo(char* szServerAddress, int iPort) {
  char* szSendBuf;
  char* szRecvBuf;
  int numbytes;
+ fd_set readfds, readfds_orig;
+ timeval tv;
  
  szSendBuf = new char[MAXDATASIZE];
  szRecvBuf = new char[MAXDATASIZE];
+ 
+ tv.tv_sec = SERVERTIMEOUT;
+ tv.tv_usec = 0;
  
  sprintf(szSendBuf, "\377\377\377\377infostring");
  szSendBuf[strlen(szSendBuf)] = '\0';
@@ -142,14 +147,24 @@ char* CHLServ::GetServerInfo(char* szServerAddress, int iPort) {
   return 0;
  }
  
- if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
-  perror("recvfrom");
-  return 0;
- }
-
- delete [] szSendBuf;
+ FD_ZERO(&readfds_orig);
+ FD_SET(HLSocket.iSockfd, &readfds_orig);
  
- return szRecvBuf + 24;
+ while (1) {
+  bcopy(&readfds_orig, &readfds, sizeof(&readfds_orig));
+  select(HLSocket.iHighestSock+1, &readfds, NULL, NULL, &tv);
+  if (FD_ISSET(HLSocket.iSockfd, &readfds)) {
+   if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
+    perror("recvfrom");
+    return 0;
+   }
+   delete [] szSendBuf;
+
+   return szRecvBuf + 24;
+  } else {
+   return 0;
+  }
+ }
 }
 
 char* CHLServ::GetPlayers(char* szServerAddress, int iPort) {
@@ -159,6 +174,11 @@ char* CHLServ::GetPlayers(char* szServerAddress, int iPort) {
  char* pkt;
  char* ret;
  int numbytes, total_players, iLoop;
+ fd_set readfds, readfds_orig;
+ timeval tv;
+
+ tv.tv_sec = SERVERTIMEOUT;
+ tv.tv_usec = 0;
  
  szSendBuf = new char[MAXDATASIZE];
  szRecvBuf = new char[MAXDATASIZE];
@@ -170,43 +190,55 @@ char* CHLServ::GetPlayers(char* szServerAddress, int iPort) {
   return 0;
  }
 
- if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
-  perror("recvfrom");
-  return 0;
- }
- if (szRecvBuf[4] == 'D') {
-  pkt = szRecvBuf;
-  pkt += 5;
-  total_players = (unsigned int)pkt[0];
-  pkt++;
-  ret = new char[MAXDATASIZE];
-  szTWordP = new char[MAXDATASIZE];
-  for (iLoop = 0; iLoop < total_players; iLoop++) {
+ FD_ZERO(&readfds_orig);
+ FD_SET(HLSocket.iSockfd, &readfds_orig);
+
+ while (1) {
+  bcopy(&readfds_orig, &readfds, sizeof(&readfds_orig));
+  select(HLSocket.iHighestSock+1, &readfds, NULL, NULL, &tv);
+  if (FD_ISSET(HLSocket.iSockfd, &readfds)) {
    
-   // Client Number/Index
-   sprintf(szTWordP, "%d\\", (unsigned int)pkt[0]);
-   strcat(ret, szTWordP);
-   clearStr(szTWordP, MAXDATASIZE);
-   pkt++;
-   
-   // Client Name
-   strcat(ret, pkt);
-   pkt += strlen(pkt);
-   pkt += 9;
-   clearStr(szTWordP, MAXDATASIZE);
-   
-   if (iLoop+1 < total_players) {
-    strcat(ret, "\\");
+   if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
+    perror("recvfrom");
+    return 0;
    }
-  }
+   if (szRecvBuf[4] == 'D') {
+    pkt = szRecvBuf;
+    pkt += 5;
+    total_players = (unsigned int)pkt[0];
+    pkt++;
+    ret = new char[MAXDATASIZE];
+    szTWordP = new char[MAXDATASIZE];
+    for (iLoop = 0; iLoop < total_players; iLoop++) {
+   
+     // Client Number/Index
+     sprintf(szTWordP, "%d\\", (unsigned int)pkt[0]);
+     strcat(ret, szTWordP);
+     clearStr(szTWordP, MAXDATASIZE);
+     pkt++;
+   
+     // Client Name
+     strcat(ret, pkt);
+     pkt += strlen(pkt);
+     pkt += 9;
+     clearStr(szTWordP, MAXDATASIZE);
+   
+     if (iLoop+1 < total_players) {
+      strcat(ret, "\\");
+     }
+    }
   
-  ret[strlen(ret)] = '\0';
- } else {
-  return 0;
+    ret[strlen(ret)] = '\0';
+   } else {
+    return 0;
+   }
+ 
+   delete [] szSendBuf;
+   delete [] szRecvBuf;
+ 
+   return ret;
+  } else {
+   return 0;
+  }
  }
- 
- delete [] szSendBuf;
- delete [] szRecvBuf;
- 
- return ret;
 }

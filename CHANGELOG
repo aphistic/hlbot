@@ -1,5 +1,7 @@
 v0.2.1
 ------
+ - Changed the players and status command responses to private messages.
+ - Added a timeout to the players and status commands.
  - Added a timeout to the RCON challenge.
  - Made the console less verbose (only required info is displayed, no debugging
    info)
@@ -7,7 +9,7 @@ v0.2.1
 v0.2.0
 ------
  - First public release.
- - Fixed bug that crashes csbot when users have spaces in their nickname.
+ - Fixed bug that crashes hlbot when users have spaces in their nickname.
  - Added IRC to HL chat via RCON.
 
 v0.1.2

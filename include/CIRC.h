@@ -2,7 +2,7 @@
 //
 // CIRC.h - Header for IRC Server class
 //
-// $Id: CIRC.h,v 1.1 2002/06/18 00:17:44 yodatoad Exp $
+// $Id: CIRC.h,v 1.2 2002/06/22 07:21:09 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -29,11 +29,12 @@ class CIRC {
  public:
   CIRC();
   ~CIRC();
-  bool Connect(char* szServer, int iPort, char* szNickname);
-  void Quit(char* szQuitMessage);
-  void Join(char* szChannel);
+  bool Connect(char*, int, char*);
+  void Quit(char*);
+  void Join(char*);
   void Part();
-  void SendPrivMsg(char* szMessage);
+  void SendPrivMsg(char*);
+  void SendPrivMsgUser(char* szMessage, char* szUser);
   int Send(char* szBuffer);
   int Recv(char* szBuffer);
   int GetHighestSock();

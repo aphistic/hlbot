@@ -2,7 +2,7 @@
 //
 // CIRC.cpp - IRC Server class
 //
-// $Id: CIRC.cpp,v 1.2 2002/06/18 17:57:03 yodatoad Exp $
+// $Id: CIRC.cpp,v 1.3 2002/06/22 07:21:09 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -80,6 +80,15 @@ void CIRC::SendPrivMsg(char* szMessage) {
 
  szSendBufP = new char[MAXDATASIZE];
  sprintf(szSendBufP, "PRIVMSG %s :%s\n", szChanName, szMessage);
+ Send(szSendBufP);
+ delete [] szSendBufP;
+}
+
+void CIRC::SendPrivMsgUser(char* szMessage, char* szUser) {
+ char *szSendBufP;
+
+ szSendBufP = new char[MAXDATASIZE];
+ sprintf(szSendBufP, "PRIVMSG %s :%s\n", szUser, szMessage);
  Send(szSendBufP);
  delete [] szSendBufP;
 }

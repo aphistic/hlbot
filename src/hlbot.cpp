@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 // 
-// $Id: hlbot.cpp,v 1.2 2002/06/18 17:53:39 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.3 2002/06/22 07:21:09 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -537,7 +537,7 @@ int main(int argc, char *argv[]) {
        }
        if (!strcmp(":status", szActWordP)) {
         szTWordP = new char[MAXDATASIZE];
-        clearStr(szSendBuf, MAXDATASIZE);
+	clearStr(szSendBuf, MAXDATASIZE);
         szQueryServer = new char[MAXDATASIZE];
         
         if (wordExists(szCurrentLineP, 5, ' ')) {
@@ -552,28 +552,31 @@ int main(int argc, char *argv[]) {
         } else {
  	 iHLPort = iCfgHLPort;
         }
-         
+        
+        szTBuf2P = getNickname(szCurrentLineP);
+	
         if ((szTWordP = HLServer.GetServerInfo(szQueryServer, iHLPort)) != 0) {
         
          sprintf(szSendBuf, "Server Name: %s", getWord(szTWordP, 18, '\\'));
-         IRCServer.SendPrivMsg(szSendBuf);
+         IRCServer.SendPrivMsgUser(szSendBuf, szTBuf2P);
          clearStr(szSendBuf, MAXDATASIZE);
    
          sprintf(szSendBuf, "Server Location: %s", getWord(szTWordP, 4, '\\'));
-         IRCServer.SendPrivMsg(szSendBuf);
+         IRCServer.SendPrivMsgUser(szSendBuf, szTBuf2P);
          clearStr(szSendBuf, MAXDATASIZE);
    
          sprintf(szSendBuf, "Current Map: %s", getWord(szTWordP, 20, '\\'));
-         IRCServer.SendPrivMsg(szSendBuf);
+         IRCServer.SendPrivMsgUser(szSendBuf, szTBuf2P);
          clearStr(szSendBuf, MAXDATASIZE);
    
          sprintf(szSendBuf, "Players: %s/%s", getWord(szTWordP, 6, '\\'), getWord(szTWordP, 12, '\\'));
-         IRCServer.SendPrivMsg(szSendBuf);
+         IRCServer.SendPrivMsgUser(szSendBuf, szTBuf2P);
          clearStr(szSendBuf, MAXDATASIZE);
         } else {
-         IRCServer.SendPrivMsg("Error connecting to server.");
+         IRCServer.SendPrivMsgUser("Error connecting to server.", szTBuf2P);
         }
         
+	delete [] szTBuf2P;
         delete [] szQueryServer;
         delete [] szTWordP;
        }
@@ -599,7 +602,9 @@ int main(int argc, char *argv[]) {
   
         if ((szTBufP = HLServer.GetPlayers(szQueryServer, iHLPort)) != 0) {
         
-         scanner_init(szTBufP);
+	 szNickname = getNickname(szCurrentLineP);
+  
+	 scanner_init(szTBufP);
          
          iTLoop = 1;
          iTNum2 = 0;
@@ -608,7 +613,7 @@ int main(int argc, char *argv[]) {
           if ((iTLoop % 2) == 1) {
            iTNum = atoi(szTWordP);
           } else if((iTLoop % 2) == 0) {
-   	   sprintf(szTBuf2P, "PRIVMSG %s :%d - %s\n", szCfgIRCChan, iTNum, szTWordP);
+   	   sprintf(szTBuf2P, "PRIVMSG %s :%d - %s\n", szNickname, iTNum, szTWordP);
  	   strcat(szSendBuf, szTBuf2P);
  	   iTNum2++;
 	   if (iTNum2 == 4) {
