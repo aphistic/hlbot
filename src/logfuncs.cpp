@@ -2,7 +2,7 @@
 //
 // logfuncs.cpp - Half-Life log functions
 //
-// $Id: logfuncs.cpp,v 1.1 2002/06/18 00:17:46 yodatoad Exp $
+// $Id: logfuncs.cpp,v 1.2 2002/06/26 02:40:10 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -21,6 +21,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
+#include <string.h>
 #include "config.h"
 
 char* getHLNick(char* szNickString) {
