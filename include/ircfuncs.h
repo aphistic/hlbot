@@ -2,7 +2,7 @@
 //
 // ircfuncs.h - IRC functions for HLBot
 //
-// $Id: ircfuncs.h,v 1.3 2002/07/09 06:37:30 yodatoad Exp $
+// $Id: ircfuncs.h,v 1.4 2003/07/03 17:02:02 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -25,5 +25,5 @@
 
 bool ircConnect(int iSockIRC, const char *szNickname);
 bool ircJoin(int iSockIRC, const char *szChannel);
-
+bool ircAuthUser(int, const char*, const char*, const char*);
 #endif

@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.15 2002/07/22 18:27:03 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.16 2003/07/03 17:02:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -47,7 +47,8 @@
 
 string sConfigLoc, sCfgHLServ, sCfgRCONPass, sCfgIRCServ;
 string sCfgIRCChan, sCfgIRCNick, sCfgModule, sCfgModuleDirectory;
-string sCfgCommandPrefix;
+string sCfgCommandPrefix, sCfgAuthService, sCfgAuthUsername;
+string sCfgAuthPassword;
 int iCfgHLPort, iCfgHLClientPort, iCfgLogPort, iCfgIRCPort;
 int iCfgTimeout, iCfgSendDelay, iCfgAdvertise;
 int iModOptions = 0;
@@ -510,6 +511,9 @@ int forkParent() {
        perror("send");
      }
      if (lTokens[1] == "001") {
+      if (sCfgAuthService.length() > 0 && sCfgAuthUsername.length() > 0 && sCfgAuthPassword.length() > 0) {
+       ircAuthUser(iSockIRC, sCfgAuthService.c_str(), sCfgAuthUsername.c_str(), sCfgAuthPassword.c_str());
+      }
       ircJoin(iSockIRC, sCfgIRCChan.c_str());
      }
      if (lTokens.size() > 3) {
@@ -1069,6 +1073,12 @@ bool readConfig(string sConfigFile) {
     iModOptions |= HLBOT_NOCOLOR;
    } else if (tokens[0] == "Advertise") {
     iCfgAdvertise = atoi(tokens[1].c_str());
+   } else if (tokens[0] == "AuthService") {
+    sCfgAuthService = tokens[1];
+   } else if (tokens[0] == "AuthUsername") {
+    sCfgAuthUsername = tokens[1];
+   } else if (tokens[0] == "AuthPassword") {
+    sCfgAuthPassword = tokens[1];
    }
   }
   iCurrentFileLine++;

@@ -2,7 +2,7 @@
 //
 // ircfuncs.cpp - HLBot IRC functions
 //
-// $Id: ircfuncs.cpp,v 1.4 2002/07/09 06:45:18 yodatoad Exp $
+// $Id: ircfuncs.cpp,v 1.5 2003/07/03 17:02:03 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -55,5 +55,20 @@ bool ircJoin(int iSockIRC, const char *szChannel) {
  sSendBuf += "\n";
  send(iSockIRC, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0);
  
+ return true;
+}
+
+bool ircAuthUser(int iSock, const char *szAuthService, const char *szAuthUsername, const char *szAuthPassword) {
+ string sSendBuf;
+ sSendBuf = "";
+ sSendBuf = "PRIVMSG ";
+ sSendBuf += szAuthService;
+ sSendBuf += " :auth ";
+ sSendBuf += szAuthUsername;
+ sSendBuf += " ";
+ sSendBuf += szAuthPassword;
+ sSendBuf += "\n";
+ send(iSock, (char *)sSendBuf.c_str(), strlen(sSendBuf.c_str()), 0);
+
  return true;
 }

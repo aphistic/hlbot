@@ -2,7 +2,7 @@
 //
 // config.h - HLBot compile configuration
 //
-// $Id: config.h,v 1.7 2002/07/11 16:52:48 yodatoad Exp $
+// $Id: config.h,v 1.8 2003/07/03 17:02:02 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -25,7 +25,7 @@
 
 #define CONFIGLOC "hlbot.cfg"
 
-//#define DEBUG
+#define DEBUG
 
 #define MAXDATASIZE 1024
 #define MAXRECVSIZE 2048
@@ -34,6 +34,6 @@
 #define PIDFILE "hlbot.pid"
 #define IPCSOCKNAMEP "/tmp/ipcparent"
 #define IPCSOCKNAMEC "/tmp/ipcchild"
-#define HLBOTVERSION "v0.3.0"
+#define HLBOTVERSION "v0.3.1cvs"
 
 #endif
