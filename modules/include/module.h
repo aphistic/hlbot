@@ -2,7 +2,7 @@
 //
 // modules.h - Some defs and functions for HLBot modules
 //
-// $Id: module.h,v 1.1 2002/07/09 07:23:52 yodatoad Exp $
+// $Id: module.h,v 1.2 2002/07/20 01:51:33 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -29,6 +29,9 @@
 
 #define MAXDATASIZE 1024
 #define MAXRECVSIZE 2048
+
+#define HLBOT_NOIPS 	0x0001
+#define HLBOT_NOCOLOR	0x0002
 
 // Thanks to Alavoor Vasudevan <alavoor[AT]yahoo.com> for the tokenizer
 void tokenize(const string& str,
