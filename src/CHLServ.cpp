@@ -2,7 +2,7 @@
 // 
 // CHLServ.cpp - Half-Life server class
 //
-// $Id: CHLServ.cpp,v 1.1 2002/06/18 00:17:45 yodatoad Exp $
+// $Id: CHLServ.cpp,v 1.2 2002/06/18 17:55:09 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -45,6 +45,8 @@ bool CHLServ::ConnectRcon (char* szRconPassParm, char* szServerAddress, int iPor
  char* szRecvBuf;
  char* rconId;
  int numbytes;
+ struct timeval tv;
+ fd_set readfds, readfds_orig;
 
  szSendBuf = new char[MAXDATASIZE];
  szRecvBuf = new char[MAXDATASIZE];
@@ -57,12 +59,27 @@ bool CHLServ::ConnectRcon (char* szRconPassParm, char* szServerAddress, int iPor
  
  if ((numbytes = HLSocket.SendtoN(szServerAddress, iPort, szSendBuf)) == -1) {
   perror("sendto");
-  return 0;
+  return false;
  }
 
- if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
-  perror("recvfrom");
-  return 0;
+ FD_ZERO(&readfds_orig);
+ FD_SET(HLSocket.iHighestSock, &readfds_orig);
+ 
+ tv.tv_sec = 1;
+ tv.tv_usec = 0;
+
+ while (1) {
+  bcopy(&readfds_orig, &readfds, sizeof(&readfds_orig));
+  select(HLSocket.iHighestSock+1, &readfds, NULL, NULL, &tv);
+  if (FD_ISSET(HLSocket.iHighestSock, &readfds)) {
+   
+   if ((numbytes = HLSocket.Recvfrom(szRecvBuf)) == -1) {
+    perror("recvfrom");
+    return false;
+   }
+  } else {
+   return false;
+  }
  }
  
  if (wordExists(szRecvBuf, 3, ' ')) {
@@ -90,8 +107,6 @@ bool CHLServ::SendRcon(char* szRconCommand, char* szServerAddress, int iPort) {
  sprintf(szSendBuf, "\377\377\377\377rcon %s \"%s\" %s", szRconId, szRconPass, szRconCommand);
  strcat(szSendBuf, "\0");
 
- printf("RCON SENDING: %s\n", szSendBuf);
- 
  if ((numbytes = HLSocket.SendtoN(szServerAddress, iPort, szSendBuf)) == -1) {
   perror("sendto");
   return false;
@@ -101,7 +116,6 @@ bool CHLServ::SendRcon(char* szRconCommand, char* szServerAddress, int iPort) {
   perror("recvfrom");
   return false;
  }
- printf("RCONSENDRECV: %s\n", szRecvBuf);
  
  return false;
 }
