@@ -1,5 +1,13 @@
-v0.3.0b
+v0.3.0
 ------
+ - Added IRC reconnect if it gets disconnected.
+ - Changed the "status" command so it displays the configured
+   server name and not the one sent in the Half-Life server info.
+ - Changed the formatting of the "players" and "status" commands
+   to use less lines in IRC.
+
+v0.3.0b
+-------
  - Complete rewrite.
  - Added support for loadable modules.
  - Created the cstrike HLBot module.
@@ -7,10 +15,7 @@ v0.3.0b
  - Added some command line options (config, module, no background,
    help, version)
  - Added message queues to avoid flooding off IRC.
- - Added IRC reconnect if it gets disconnected.
- - Changed the "status" command so it displays the configured
-   server name and not the one sent in the Half-Life server info.
- 
+   
 v0.2.2
 ------
  - Added support for name changes on the Half-Life server.
