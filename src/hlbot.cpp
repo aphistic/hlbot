@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.12 2002/07/15 20:29:41 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.13 2002/07/16 08:13:43 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
  
  signal(SIGINT, catchInt);
  
+ sConfigLoc = "";
  for (iLoopTemp = 1; iLoopTemp < argc; iLoopTemp++) {
   if (!strcmp(argv[iLoopTemp], "--config") || !strcmp(argv[iLoopTemp], "-c")) {
    if (iLoopTemp + 1 > argc-1) {
@@ -106,6 +107,10 @@ int main(int argc, char *argv[]) {
   }
  }
 
+ if (sConfigLoc.empty()) {
+  sConfigLoc = CONFIGLOC;
+ }
+ 
  iCfgHLPort = 27015;
  iCfgHLClientPort = 0;
  iCfgLogPort = 27008;
