@@ -1,3 +1,11 @@
+v0.3.1RC3
+------
+ - make install now works :)
+ - . is now the default command prefix!
+ - Fixed FreeBSD Make Problems... USE gmake!!!
+ - Chris Flanigan <chris@chrisf.net> joined Source Forge Team(irc nick:Chris)
+ - Lee Burton <LeeReedBurton@cox.net> joined Source Forge Team(irc nick:SG1)
+
 v0.3.1
 ------
  - Added option to not show player connects.

@@ -2,7 +2,7 @@
 //
 // hlbot.h - Main header for HLBot
 //
-// $Id: hlbot.h,v 1.3 2002/07/22 18:27:02 yodatoad Exp $
+// $Id: hlbot.h,v 1.4 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -24,6 +24,8 @@
 #define HLBOT_HLBOT_H
 
 #include <vector>
+
+using namespace std;
 
 #define HLBOT_NOIPS		0x0001
 #define HLBOT_NOCOLOR		0x0002

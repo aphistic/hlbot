@@ -2,7 +2,7 @@
 //
 // ircfuncs.cpp - HLBot IRC functions
 //
-// $Id: ircfuncs.cpp,v 1.5 2003/07/03 17:02:03 yodatoad Exp $
+// $Id: ircfuncs.cpp,v 1.6 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -20,6 +20,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+#include <sys/types.h>
 #include <string>
 #include <stdio.h>
 #include <sys/socket.h>

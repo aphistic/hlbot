@@ -2,9 +2,9 @@
 //
 // config.h - HLBot compile configuration
 //
-// $Id: config.h,v 1.8 2003/07/03 17:02:02 yodatoad Exp $
+// $Id: config.h,v 1.9 2003/07/10 02:12:31 sg1bc Exp $
 
-// Copyright (C) 2002  Erik Davidson
+// Copyright (C) 2003  Erik Davidson
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,6 +34,6 @@
 #define PIDFILE "hlbot.pid"
 #define IPCSOCKNAMEP "/tmp/ipcparent"
 #define IPCSOCKNAMEC "/tmp/ipcchild"
-#define HLBOTVERSION "v0.3.1cvs"
+#define HLBOTVERSION "v0.3.1RC3cvs"
 
 #endif

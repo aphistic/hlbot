@@ -2,7 +2,7 @@
 //
 // strfuncs.cpp - String manipulation functions
 //
-// $Id: strfuncs.cpp,v 1.3 2002/07/09 06:45:18 yodatoad Exp $
+// $Id: strfuncs.cpp,v 1.4 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -23,6 +23,8 @@
 #include <vector>
 #include <string>
 #include "config.h"
+
+using namespace std;
 
 // Thanks to Alavoor Vasudevan <alavoor[AT]yahoo.com> for the tokenizer
 void tokenize(const string& str, 

@@ -8,7 +8,7 @@ directory (hlbot-0.3.x).
 1. Edit include/config.h as you see fit (not
    necessary but you may want to)
 
-2. make
+2. make OR IF YOU ARE ON FreeBSD use gmake
 
 3. cd modules
 
@@ -16,9 +16,11 @@ directory (hlbot-0.3.x).
 
 5. cd ..
 
-6. Edit hlbot.cfg to fit your setup.
+6. make install if you want hlbot in a different folder(it will ask you where)
 
-7. Run hlbot by typing either ./hlbot or
+7. Edit hlbot.cfg to fit your setup.
+
+8. Run hlbot by typing either ./hlbot or
    ./hlbot --help to see the other options
 
 

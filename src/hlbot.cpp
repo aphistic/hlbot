@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.16 2003/07/03 17:02:03 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.17 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -20,10 +20,20 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+
+#include <sys/param.h>
+
+#if (defined(BSD))
+// FreeBSD Fixes Per Chris Flanigan <chris@chrisf.net>
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
+
 #include <string>
 #include <vector>
 #include <stdio.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -31,6 +41,7 @@
 #include <signal.h>
 #include <netdb.h>
 #include <dlfcn.h>
+#include <iostream>
 
 #ifndef RTLD_NOW
 #  define RTLD_NOW 2
@@ -140,7 +151,7 @@ int main(int argc, char *argv[]) {
   sCfgModuleDirectory = "./modules";
  }
 
- cout << "\nHLBot " << HLBOTVERSION << ", Copyright (C) 2002 Erik Davidson\n";
+ cout << "\nHLBot " << HLBOTVERSION << ", Copyright (C) 2003 Erik Davidson\n";
  cout << "HLBot comes with ABSOLUTELY NO WARRANTY; for details type\n";
  cout << "'show w'.  This is free software, and you are welcome to\n";
  cout << "redistribute it under certain conditions; type 'show c'\n";

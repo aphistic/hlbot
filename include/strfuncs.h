@@ -2,7 +2,7 @@
 //
 // strfuncs.h - Header for string functions
 //
-// $Id: strfuncs.h,v 1.3 2002/07/09 06:38:49 yodatoad Exp $
+// $Id: strfuncs.h,v 1.4 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -25,6 +25,7 @@
 
 #include <vector>
 
+using namespace std;
 void tokenize(const string& str, vector<string>& tokens, const string& delimiters = " ");
 void strReplace(string& sReplace, char *szFind, char *szRepWith);
 

@@ -2,7 +2,7 @@
 //
 // sockets.cpp - HLBot sockets functions
 //
-// $Id: sockets.cpp,v 1.1 2002/07/09 06:45:18 yodatoad Exp $
+// $Id: sockets.cpp,v 1.2 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -20,6 +20,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+#include <sys/types.h>
+#include <netinet/in.h>
+
 #include <stdio.h>
 #include <netdb.h>
 #include <string.h>
@@ -29,7 +32,8 @@
 int sockConnect(const char *szHostname, int iPort) {
  int iSockfd;
  struct hostent *he;
- struct sockaddr_in haddr;
+ 
+struct sockaddr_in haddr;
 
  if ((iSockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
   perror("socket");

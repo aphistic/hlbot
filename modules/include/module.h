@@ -2,7 +2,7 @@
 //
 // modules.h - Some defs and functions for HLBot modules
 //
-// $Id: module.h,v 1.3 2002/07/22 18:27:03 yodatoad Exp $
+// $Id: module.h,v 1.4 2003/07/10 02:12:31 sg1bc Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -25,7 +25,8 @@
 
 #include <vector>
 #include <string>
-#include <string.h>
+
+using namespace std;
 
 #define MAXDATASIZE 1024
 #define MAXRECVSIZE 2048
