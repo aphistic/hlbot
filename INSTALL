@@ -16,8 +16,9 @@ it's not too bad. :)
    mp_logmessages 1
    mp_logdetail 3
    log on
+
 6. Go into the modules directory and type ./cstrike.sh to compile the
    HLBot cstrike module.
 7. Create a directory where you copied the hlbot binary called modules
    and copy cstrike.so into that directory.
-6. Run hlbot
+6. Run hlbot (./hlbot or ./hlbot --help for extra commands)
