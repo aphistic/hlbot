@@ -6,7 +6,9 @@ v0.3.0
  - Changed the formatting of the "players" and "status" commands
    to use less lines in IRC.
  - Added a frag count to the "players" command.
-   
+ - Added an option to hide the IP of clients connecting to the
+   Half-Life server.
+ 
 v0.3.0b
 -------
  - Complete rewrite.
