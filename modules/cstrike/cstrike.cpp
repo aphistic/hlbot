@@ -2,7 +2,7 @@
 //
 // cstrike.cpp - Counter-Strike HLBot module
 //
-// $Id: cstrike.cpp,v 1.3 2002/07/20 01:52:18 yodatoad Exp $
+// $Id: cstrike.cpp,v 1.4 2002/07/20 01:55:33 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -28,7 +28,7 @@
 #include <vector>
 
 // Module version number
-#define MODVERSION "v0.0.1"
+#define MODVERSION "v0.1.0"
 
 // Module author
 #define MODAUTHOR "Erik Davidson"
