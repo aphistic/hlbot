@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.11 2002/07/15 07:10:14 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.12 2002/07/15 20:29:41 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -50,6 +50,7 @@ string sCfgIRCChan, sCfgIRCNick, sCfgModule, sCfgModuleDirectory;
 string sCfgCommandPrefix;
 int iCfgHLPort, iCfgHLClientPort, iCfgLogPort, iCfgIRCPort;
 int iCfgTimeout, iCfgSendDelay, iCfgAdvertise;
+int iModOptions = 0;
 
 // Socket Variables
 
@@ -893,12 +894,22 @@ int forkChild() {
   sexit(1);
  }
 
+ typedef void (*modSetOptions_t)(int iOpt);
+ modSetOptions_t modSetOptions = (modSetOptions_t) dlsym(handle, "modSetOptions");
+ if (!modSetOptions) {
+  cout << "Cannot load symbol 'modSetOptions': " << dlerror() << '\n';
+  dlclose(handle);
+  sexit(1);
+ }
+ 
  tv.tv_sec = 0;
  tv.tv_usec = 10000;
  
  FD_ZERO(&readfds_orig);
  FD_SET(iSockIPCC, &readfds_orig);
  FD_SET(iSockHLLog, &readfds_orig);
+
+ modSetOptions(iModOptions);
  
  while (1) {
   bcopy(&readfds_orig, &readfds, sizeof(&readfds_orig));
@@ -1045,6 +1056,8 @@ bool readConfig(string sConfigFile) {
     sCfgModuleDirectory = tokens[1];
    } else if (tokens[0] == "CommandPrefix") {
     sCfgCommandPrefix = tokens[1];
+   } else if (tokens[0] == "HideConnectIP") {
+    iModOptions |= 0x01;
    } else if (tokens[0] == "Advertise") {
     iCfgAdvertise = atoi(tokens[1].c_str());
    }

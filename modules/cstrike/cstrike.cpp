@@ -2,7 +2,7 @@
 //
 // cstrike.cpp - Counter-Strike HLBot module
 //
-// $Id: cstrike.cpp,v 1.1 2002/07/09 07:23:16 yodatoad Exp $
+// $Id: cstrike.cpp,v 1.2 2002/07/15 20:29:41 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -39,6 +39,8 @@
 // Filename of module (ie: cstrike.so would be cstrike here)
 #define MODNAME "cstrike"
 
+
+int iOptions = 0;
 
 // Required function that parses the log files that are received
 extern "C" char* parseLogLine(const char *argument) {
@@ -192,9 +194,15 @@ extern "C" char* parseLogLine(const char *argument) {
    if (tokens3[0] == "connected,") {
     sSendBuf = "\001SAY\001";
     sSendBuf += playerInfo[0];
-    sSendBuf += " connected from ";
+    sSendBuf += " connected";
+    if (iOptions & 0x01 == 0x01) {
+     sSendBuf += ".";
+    } else {
+     sSendBuf += " from ";
     sSendBuf += tokens2[2];
-    sSendBuf += ".\001";
+    sSendBuf += ".";
+   }
+    sSendBuf += "\001";
    } else if (tokens3[0] == "changed") {
     sSendBuf = "\001SAY\001";
     sSendBuf += playerInfo[0];
@@ -300,3 +308,11 @@ extern "C" char* modName() {
  return ret;
 }
 
+// Required function that sets the module run options
+extern "C" void modSetOptions(int iOpt) {
+ iOptions = iOpt;
+
+ if (iOptions & 0x01 == 0x01) {
+  cout << "Mod Hid IPs\n";
+ }
+}
