@@ -9,6 +9,19 @@ I hope to add support for TFC, plain Half-Life and any other mods people request
 
 Installation notes are in the INSTALL file.
 
+Commands
+--------
+Type these in IRC:
+
+help - Displays the commands HLBot understands
+status [server] [port] - Displays the status of the server (server and port
+                         are optional)
+players [server] [port] - Displays the players on the server (server and port
+                          are optional)
+version - Displays HLBot's version.
+!s <text> - Displays <text> on the CS Server (RCON required)
+
+
 HLBot is released under the GNU Public License, read LICENSE for more info.
 If you make any changes to HLBot I'd like it if you could send it to me at
 erik@erikd.org.  I want to see what kinda stuff people are doing with my baby. :)

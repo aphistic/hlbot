@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 // 
-// $Id: hlbot.cpp,v 1.3 2002/06/22 07:21:09 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.4 2002/06/24 00:30:45 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -414,6 +414,7 @@ int main(int argc, char *argv[]) {
   printf("Connecting to IRC Server\n");
   if (!IRCServer.Connect(szCfgIRCServ, iCfgIRCPort, szCfgIRCNick)) {
    printf("Failed to connect to IRC Server %s:%d\n", szCfgIRCServ, iCfgIRCPort);
+   ParentIPCSock.SendtoIPC(IPCSOCKNAMEC, "kill");
    exit(1);
   }
   
@@ -519,6 +520,7 @@ int main(int argc, char *argv[]) {
         IRCServer.SendPrivMsg("version - Displays HLBot version information.");
         IRCServer.SendPrivMsg("status [server] [port] - Displays server status information.");
         IRCServer.SendPrivMsg("players [server] [port] - Displays the current players.");
+	IRCServer.SendPrivMsg("!s <text> - Displays <text> on the Half-Life server.");
         delete [] szTWordP;
        }
        if (!strcmp(":!s", szActWordP)) {
