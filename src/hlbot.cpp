@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 // 
-// $Id: hlbot.cpp,v 1.1 2002/06/18 00:17:45 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.2 2002/06/18 17:53:39 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -106,12 +106,8 @@ int main(int argc, char *argv[]) {
  looptest = 0;
  signal(SIGINT, catchInt);
 
- printf("Creating Child IPC Bind... ");
  ChildIPCSock.BindDGRAMIPC(IPCSOCKNAMEC);
- printf("Done(Child).\n");
- printf("Creating Parent IPC Bind... ");
  ParentIPCSock.BindDGRAMIPC(IPCSOCKNAMEP);
- printf("Done(Parent).\n");
 
  if ((pid = fork()) == -1) {
   perror("fork");
@@ -124,8 +120,6 @@ int main(int argc, char *argv[]) {
   CSocket HLLogSock;
  
   HLLogSock.BindDGRAM(iCfgLogPort);
-  
-  printf("Forked Child\n"); 
   
   FD_ZERO(&creadfds);
 
@@ -144,17 +138,12 @@ int main(int argc, char *argv[]) {
    if (FD_ISSET(ChildIPCSock.iSockfd, &creadfds)) {
     clearStr(szRecvBuf, MAXDATASIZE);
     ChildIPCSock.RecvfromIPC(szRecvBuf);
+#ifdef DEBUG    
     printf("CHILD: Parent sent something - \"%s\"\n", szRecvBuf);
+#endif
     if (!strcmp(szRecvBuf, "kill")) {
-     printf("CHILD: OMFG!@#$ He's killing me!\nCHILD: Dying\nCHILD: Not before I kill him too!\n");
-     if ((numbytes = ChildIPCSock.SendtoIPC(IPCSOCKNAMEP, "kill")) == -1) {
-      perror("sendto");
-      exit(1);
-     }
-     printf("Sent: %d\n", numbytes);
      exit(0);
     }
-    printf("CHILD: Never mind\n");
     tv.tv_sec = 1;
    } else if (FD_ISSET(HLLogSock.iSockfd, &creadfds)) {
     clearStr(szRecvBuf, MAXDATASIZE);
@@ -166,8 +155,10 @@ int main(int argc, char *argv[]) {
     if (pkt[strlen(pkt)-1] == '\n') {
      pkt[strlen(pkt)-1] = '\0';
     }
-    
+
+#ifdef DEBUG
     printf("HL Log: %s\n", szRecvBuf);
+#endif
     
     szActWordP = getWord(pkt, 1, ' ');
     if (!strcmp(szActWordP, "Log")) {
@@ -180,7 +171,6 @@ int main(int argc, char *argv[]) {
        clearStr(szSendBuf, MAXDATASIZE);
        if (wordExists(pkt, 2, '\"')) {
         szTBuf2P = getWord(pkt, 2, '\"');
-	printf ("Server Said: %s\n", szTBuf2P);
 	sprintf(szSendBuf, "<Server> %s", szTBuf2P);
        }
        ChildIPCSock.SendtoIPC(IPCSOCKNAMEP, szSendBuf);
@@ -294,13 +284,10 @@ int main(int argc, char *argv[]) {
      }
     } else if (pkt[0] == '\"') {
      szTBufP = getWord(pkt, 1, ' ');
-     printf("szTBufP: %s\n", szTBufP);
      hlFullInfo = getWord(pkt, 1, '\"');
-     printf("hlFullInfo: %s\n", hlFullInfo);
      hlNickname = getHLNick(hlFullInfo);
      if (wordExists(pkt, 2, '\"')) {
       hlDoing = getWord(pkt, 2, '\"');
-      printf("hlDoing: %s\n", hlDoing);
        
       switch(getHLTeam(hlFullInfo)) {
        case 'S':
@@ -315,7 +302,6 @@ int main(int argc, char *argv[]) {
       }
       
       szTWordP = getWord(hlDoing, 1, ' ');
-      printf("szTWordP: z%sz\n", szTWordP);
      
       if (!strcmp(szTWordP, "connected,")) {
        szTBufP = getWord(pkt, 3, '\"');
@@ -325,7 +311,6 @@ int main(int argc, char *argv[]) {
       }
       if (!strcmp(szTWordP, "committed")) {
        hlKilledWith = getWord(pkt, 3, '\"');
-       printf("hlKilledWith: %s\n", hlKilledWith);
        clearStr(szSendBuf, MAXDATASIZE);
        sprintf(szSendBuf, "%s committed suicide with %s", hlNickname, hlKilledWith);
        ChildIPCSock.SendtoIPC(IPCSOCKNAMEP, szSendBuf);
@@ -358,7 +343,6 @@ int main(int argc, char *argv[]) {
        clearStr(szSendBuf, MAXDATASIZE);
        if (wordExists(pkt, 4, '\"')) {
 	szTBuf2P = getWord(pkt, 4, '\"');
-	printf("Said: %s\n", szTBuf2P);
 	if (szTBuf2P != NULL) {
 	 if (!strcmp(szTBuf2P, " (dead)")) {
 	  strcat(szSendBuf, "*DEAD* ");
@@ -381,7 +365,6 @@ int main(int argc, char *argv[]) {
       }
       if (!strcmp(szTWordP, "killed")) {
        hlFullInfo2 = getWord(pkt, 3, '\"');
-       printf("hlFullInfo2: %s\n", hlFullInfo2);
        hlNickname2 = getHLNick(hlFullInfo2);
        switch(getHLTeam(hlFullInfo2)) {
 	case 'C':
@@ -417,16 +400,22 @@ int main(int argc, char *argv[]) {
   tv.tv_sec = 5;
   tv.tv_usec = 0;
   
+  printf("Creating HL Server Bind\n");
   if (!HLServer.CreateListener(iCfgHLClientPort)) {
    printf("Failed to Bind HL Server socket\n");
    exit(1);
   }
 
+  printf("Challenging RCON\n");
   if (!HLServer.ConnectRcon(szCfgRconPass, szCfgHLServ, iCfgHLPort)) {
    printf("Rcon challenge failed. Rcon functions will not work.\n");
   }
   
-  IRCServer.Connect(szCfgIRCServ, iCfgIRCPort, szCfgIRCNick);
+  printf("Connecting to IRC Server\n");
+  if (!IRCServer.Connect(szCfgIRCServ, iCfgIRCPort, szCfgIRCNick)) {
+   printf("Failed to connect to IRC Server %s:%d\n", szCfgIRCServ, iCfgIRCPort);
+   exit(1);
+  }
   
   FD_SET(IRCServer.GetSockfd(), &readfds);
   FD_SET(ParentIPCSock.iSockfd, &readfds);
@@ -435,7 +424,6 @@ int main(int argc, char *argv[]) {
    select(ParentIPCSock.iHighestSock+1, &readfds, NULL, NULL, &tv);
  
    if (FD_ISSET(IRCServer.GetSockfd(), &readfds)) {
-    printf("(%d) Before IRCServer.Recv\n", looptest);
     if ((numbytes = IRCServer.Recv(szRecvBuf)) == -1) {
      perror("recv");
      exit(1);
@@ -443,21 +431,24 @@ int main(int argc, char *argv[]) {
     
     looptest++;
     
-    printf("(%d) After IRCServer.Recv\n", looptest);
     if (numbytes == 0) {
      printf("Disconnected from server.\n");
      IRCServer.Connect(szCfgIRCServ, iCfgIRCPort, szCfgIRCNick);
     } else {
     
-     printf("Recieved %d bytes.\n", numbytes);
      szTBufP = szRecvBuf;
      
      while ((szCurrentLineP = strtok(szTBufP, "\n")) != NULL) {
+
+#ifdef DEBUG
       printf("Current Line: %s\n", szCurrentLineP);      
- 
+#endif
+      
       if ((szActWordP = getWord(szCurrentLineP, 1, ' ')) != 0) {    
        if (!strcmp("PING", szActWordP)) {
-        printf("Recived PING. Sending PONG\n");
+#ifdef DEBUG
+	printf("Recived PING. Sending PONG\n");
+#endif
         szTWordP = getWord(szCurrentLineP, 2, ' ');
         sprintf(szSendBuf, "PONG %s\n", szTWordP);
         IRCServer.Send(szSendBuf);
@@ -469,7 +460,7 @@ int main(int argc, char *argv[]) {
       
       if ((szActWordP = getWord(szCurrentLineP, 2, ' ')) != 0) {
        if (!strcmp("001", szActWordP)) {
-        printf("Server welcome recieved. Joining Channel %s\n", szCfgIRCChan);
+	printf("Connected to IRC Server\n");
         IRCServer.Join(szCfgIRCChan);
        }
        delete [] szActWordP;
@@ -479,7 +470,6 @@ int main(int argc, char *argv[]) {
        if (!strcmp(":\001VERSION\001", szActWordP)) {
         szTWordP = new char[MAXDATASIZE];
         
-        printf("CTCP Version\n");
         szNickname = getNickname(szCurrentLineP);
         sprintf(szTWordP, "NOTICE %s :\001VERSION HLBOT %s [http://hlbot.erikd.org]\001\n", szNickname, VERSION);
         IRCServer.Send(szTWordP);
@@ -495,7 +485,6 @@ int main(int argc, char *argv[]) {
        
         clearStr(szSendBuf, MAXDATASIZE);
         
-        printf("CTCP Ping\n");
         szNickname = getNickname(szCurrentLineP);
         
         szTWordP = getWord(szCurrentLineP, 5, ' ');
@@ -517,14 +506,12 @@ int main(int argc, char *argv[]) {
        }
        if (!strcmp(":version", szActWordP)) {
         szTWordP = new char[MAXDATASIZE];
-        printf("Sending Version info\n");
         sprintf(szTWordP, "HLBot %s [http://hlbot.erikd.org]", VERSION);
         IRCServer.SendPrivMsg(szTWordP);
         delete [] szTWordP;
        }
        if (!strcmp(":help", szActWordP)) {
         szTWordP = new char[MAXDATASIZE];
-        printf("Sending Help\n");
         sprintf(szTWordP, "HLBot %s Commands", VERSION);
         IRCServer.SendPrivMsg(szTWordP);
         IRCServer.SendPrivMsg("---");
@@ -544,7 +531,6 @@ int main(int argc, char *argv[]) {
         szTBufP = getPhrase(szCurrentLineP, 4, ' ');
 	clearStr(szSendBuf, MAXDATASIZE);
 	sprintf(szSendBuf, "say (IRC)<%s>%s", szIRCNick, szTBufP);
-	printf("PHRASE: %s\n", szSendBuf);
 	HLServer.SendRcon(szSendBuf, szQueryServer, iHLPort);
         
 	delete [] szIRCNick;
@@ -654,16 +640,17 @@ int main(int argc, char *argv[]) {
     clearStr(szRecvBuf, MAXDATASIZE);
    } else if (FD_ISSET(ParentIPCSock.iSockfd, &readfds)) {
     clearStr(szRecvBuf, MAXDATASIZE);
+#ifdef DEBUG
     printf("PARENT: Child sent something.\n");
+#endif
     ParentIPCSock.RecvfromIPC(szRecvBuf);
+#ifdef DEBUG
     printf("PARENT: Child sent \"%s\"\n", szRecvBuf);
-    if (!strcmp(szRecvBuf, "kill")) {
-     printf("PARENT: OMFG! He's killing me!\n*dies*\n");
-     exit(0);
-    } else {
-     IRCServer.SendPrivMsg(szRecvBuf);
-    }
+#endif
+    IRCServer.SendPrivMsg(szRecvBuf);
+#ifdef DEBUG
     printf("PARENT: Nothing big.\n");
+#endif
    } else {
     tv.tv_sec = 5;
     FD_SET(IRCServer.GetSockfd(), &readfds);
@@ -761,20 +748,10 @@ bool readConfig() {
   iCurrentFileLine++;
  }
 
- printf("CONFIG: szCfgHLServ = %s\n", szCfgHLServ);
- printf("CONFIG: szCfgIRCServ = %s\n", szCfgIRCServ);
- printf("CONFIG: szCfgIRCChan = %s\n", szCfgIRCChan);
- printf("CONFIG: szCfgIRCNick = %s\n", szCfgIRCNick);
- printf("CONFIG: szCfgRconPass = %s\n", szCfgRconPass);
- printf("CONFIG: iCfgHLPort = %d\n", iCfgHLPort);
- printf("CONFIG: iCfgHLClientPort = %d\n", iCfgHLClientPort);
- printf("CONFIG: iCfgIRCPort = %d\n", iCfgIRCPort);
- printf("CONFIG: iCfgLogPort = %d\n", iCfgLogPort);
  return true;
 }
 
 void catchInt(int s) {
- printf("Caught SIGINT... Exiting.\n");
- IRCServer.Quit("Caught SIGINT... Quitting.");
+ IRCServer.Quit("HLBot - http://hlbot.erikd.org");
  exit(0);
 }
