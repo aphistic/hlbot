@@ -1,24 +1,24 @@
 HLBot Installation
 ------------------
 
-This beta doesn't have a very friendly install at the moment, but
-it's not too bad. :)
+Ok, on to the fun stuff!
+This assumes you're already in the hlbot root
+directory (hlbot-0.3.x).
 
-1. Check include/config.h to make sure CONFIGLOC is a path to 
-   where you want the config file for HLBot stored.
+1. Edit include/config.h as you see fit (not
+   necessary but you may want to)
+
 2. make
-3. Copy hlbot.cfg to the location you specified in CONFIGLOC and modify as 
-   needed
-4. Copy hlbot to and location you'd like (or even leave it where it is)
-5. Add the following 4 lines to your server.cfg on your Half-Life server:
-   
-   logaddress <ip of server where hlbot is running> <port hlbot listens on>
-   mp_logmessages 1
-   mp_logdetail 3
-   log on
 
-6. Go into the modules directory and type ./cstrike.sh to compile the
-   HLBot cstrike module.
-7. Create a directory where you copied the hlbot binary called modules
-   and copy cstrike.so into that directory.
-6. Run hlbot (./hlbot or ./hlbot --help for extra commands)
+3. cd modules
+
+4. ./cstrike.sh
+
+5. cd ..
+
+6. Edit hlbot.cfg to fit your setup.
+
+7. Run hlbot by typing either ./hlbot or
+   ./hlbot --help to see the other options
+
+
