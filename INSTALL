@@ -1,10 +1,11 @@
 HLBot Installation
 ------------------
 
-Installation is really simple at the moment, just a few steps are involved:
+This beta doesn't have a very friendly install at the moment, but
+it's not too bad. :)
 
-1. Check include/config.h to make sure CONFIGLOC is a path to where you want
-   the config file for HLBot stored.
+1. Check include/config.h to make sure CONFIGLOC is a path to 
+   where you want the config file for HLBot stored.
 2. make
 3. Copy hlbot.cfg to the location you specified in CONFIGLOC and modify as 
    needed
@@ -15,7 +16,8 @@ Installation is really simple at the moment, just a few steps are involved:
    mp_logmessages 1
    mp_logdetail 3
    log on
-   
+6. Go into the modules directory and type ./cstrike.sh to compile the
+   HLBot cstrike module.
+7. Create a directory where you copied the hlbot binary called modules
+   and copy cstrike.so into that directory.
 6. Run hlbot
-
-You're all set!

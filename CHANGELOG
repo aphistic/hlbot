@@ -1,3 +1,13 @@
+v0.3.0b
+------
+ - Complete rewrite.
+ - Added support for loadable modules.
+ - Created the cstrike HLBot module.
+ - HLBot launches into the background by default.
+ - Added some command line options (config, module, no background,
+   help, version)
+ - Added message queues to avoid flooding off IRC.
+ 
 v0.2.2
 ------
  - Added support for name changes on the Half-Life server.
@@ -5,7 +15,7 @@ v0.2.2
  - Updated the command listing of the commands HLBot supports.
  - Fixed a condition where the child process didn't die when the parent did.
  - Fixed where all the players were not displayed with the players command.
- 
+
 v0.2.1
 ------
  - Changed the players and status command responses to private messages.
