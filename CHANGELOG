@@ -1,3 +1,11 @@
+v0.2.2
+------
+ - Added support for name changes on the Half-Life server.
+ - Added the Advertise option to the HLBot config.
+ - Updated the command listing of the commands HLBot supports.
+ - Fixed a condition where the child process didn't die when the parent did.
+ - Fixed where all the players were not displayed with the players command.
+ 
 v0.2.1
 ------
  - Changed the players and status command responses to private messages.

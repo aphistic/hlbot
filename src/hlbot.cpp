@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 // 
-// $Id: hlbot.cpp,v 1.4 2002/06/24 00:30:45 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.5 2002/06/25 21:39:51 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -43,6 +43,7 @@
 #include "CHLServ.h"
 
 void catchInt(int s);
+void catchAlrm(int s);
 bool readConfig();
 
 CIRC IRCServer;
@@ -52,7 +53,7 @@ CSocket ChildIPCSock, ParentIPCSock;
 //Config Vars
 char *szCfgHLServ, *szCfgIRCServ, *szCfgIRCChan, *szCfgIRCNick;
 char *szCfgRconPass;
-int iCfgHLPort, iCfgHLClientPort, iCfgIRCPort, iCfgLogPort;
+int iCfgHLPort, iCfgHLClientPort, iCfgIRCPort, iCfgLogPort, iCfgAdvertise;
 
 
 
@@ -102,10 +103,15 @@ int main(int argc, char *argv[]) {
  if (szCfgRconPass[0] == '\0') {
   printf("No RCON Password was supplied. Functions using rcon will not work.\n");
  }
+
+ if (iCfgAdvertise > 0) {
+  alarm(iCfgAdvertise*60);
+ }
  
  looptest = 0;
  signal(SIGINT, catchInt);
-
+ signal(SIGALRM, catchAlrm);
+ 
  ChildIPCSock.BindDGRAMIPC(IPCSOCKNAMEC);
  ParentIPCSock.BindDGRAMIPC(IPCSOCKNAMEP);
 
@@ -309,6 +315,12 @@ int main(int argc, char *argv[]) {
        sprintf(szSendBuf, "%s connected from %s", hlNickname, szTBufP);
        ChildIPCSock.SendtoIPC(IPCSOCKNAMEP, szSendBuf);
       }
+      if (!strcmp(szTWordP, "changed")) {
+       szTBufP = getWord(pkt, 3, '\"');
+       clearStr(szSendBuf, MAXDATASIZE);
+       sprintf(szSendBuf, "%s changed name to %s", hlNickname, szTBufP);
+       ChildIPCSock.SendtoIPC(IPCSOCKNAMEP, szSendBuf);
+      }
       if (!strcmp(szTWordP, "committed")) {
        hlKilledWith = getWord(pkt, 3, '\"');
        clearStr(szSendBuf, MAXDATASIZE);
@@ -365,6 +377,7 @@ int main(int argc, char *argv[]) {
       }
       if (!strcmp(szTWordP, "killed")) {
        hlFullInfo2 = getWord(pkt, 3, '\"');
+       clearStr(hlNickname2, MAXDATASIZE);
        hlNickname2 = getHLNick(hlFullInfo2);
        switch(getHLTeam(hlFullInfo2)) {
 	case 'C':
@@ -381,6 +394,7 @@ int main(int argc, char *argv[]) {
        delete [] szTBufP;
       }
      }
+
     } else {
      //Ignore for now
     }
@@ -611,7 +625,11 @@ int main(int argc, char *argv[]) {
          iTLoop = 1;
          iTNum2 = 0;
          
-         while ((szTWordP = getWord(szTBufP, iTLoop, '\\')) != 0) {
+         if (szTBufP[0] == '\0') {
+	  sprintf(szTBuf2P, "PRIVMSG %s :There are no players on the server.\n", szNickname);
+	  IRCServer.Send(szTBuf2P);
+	 }
+	 while ((szTWordP = getWord(szTBufP, iTLoop, '\\')) != 0) {
           if ((iTLoop % 2) == 1) {
            iTNum = atoi(szTWordP);
           } else if((iTLoop % 2) == 0) {
@@ -628,6 +646,9 @@ int main(int argc, char *argv[]) {
          
           iTLoop++;
          }
+	 IRCServer.Send(szSendBuf);
+	 clearStr(szSendBuf, MAXDATASIZE);
+	 iTNum2 = 0;
         } else {
          IRCServer.SendPrivMsg("Error connecting to server.");
         }
@@ -743,6 +764,10 @@ bool readConfig() {
    delete [] szConfigWord;
    szConfigWord = scanner_token(' ');
    iCfgLogPort = atoi(szConfigWord);
+  } else if (!strcmp("Advertise", szConfigWord)) {
+   delete [] szConfigWord;
+   szConfigWord = scanner_token(' ');
+   iCfgAdvertise = atoi(szConfigWord);
   } else if (szConfigWord[0] == '#' || szConfigWord[0] == '\n') {
    delete [] szConfigWord;
   } else {
@@ -756,6 +781,15 @@ bool readConfig() {
  }
 
  return true;
+}
+
+void catchAlrm(int s) {
+ char *szAlarmString;
+ szAlarmString = new char[MAXDATASIZE];
+ sprintf(szAlarmString, "say Monitored by HLBot %s [http://hlbot.erikd.org]", VERSION);
+ HLServer.SendRcon(szAlarmString, szCfgHLServ, iCfgHLPort);
+ alarm(iCfgAdvertise*60);
+ printf("Alarm!\n");
 }
 
 void catchInt(int s) {

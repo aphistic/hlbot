@@ -2,7 +2,7 @@
 // 
 // CHLServ.cpp - Half-Life server class
 //
-// $Id: CHLServ.cpp,v 1.4 2002/06/22 07:21:09 yodatoad Exp $
+// $Id: CHLServ.cpp,v 1.5 2002/06/25 21:39:51 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "config.h"
 #include "strfuncs.h"
@@ -45,7 +46,7 @@ bool CHLServ::ConnectRcon (char* szRconPassParm, char* szServerAddress, int iPor
  char* szRecvBuf;
  char* rconId;
  int numbytes;
- struct timeval tv;
+ timeval tv;
  fd_set readfds, readfds_orig;
 
  szSendBuf = new char[MAXDATASIZE];
