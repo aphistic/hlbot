@@ -2,7 +2,7 @@
 //
 // config.h - Configuration header for HLBot
 //
-// $Id: config.h,v 1.3 2002/06/22 07:21:09 yodatoad Exp $
+// $Id: config.h,v 1.4 2002/06/24 00:32:48 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -26,7 +26,7 @@
 // You may want to edit this location
 #define CONFIGLOC "hlbot.cfg"
 
-#define DEBUG
+//#define DEBUG
 
 #define USERNAME "HLBot"
 #define REALNAME "HLBot"
@@ -39,6 +39,6 @@
 #define MAXRECVLEN 2048
 #define MAXDATASIZE 1024
 
-#define VERSION "v0.2.1"
+#define VERSION "v0.2.2"
 
 #endif
