@@ -2,7 +2,7 @@
 //
 // hlbot.cpp - Main HLBot source
 //
-// $Id: hlbot.cpp,v 1.10 2002/07/15 05:43:29 yodatoad Exp $
+// $Id: hlbot.cpp,v 1.11 2002/07/15 07:10:14 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -332,7 +332,7 @@ int forkParent() {
        tTokens.clear();
        tokenize(sTString, tTokens, "\\");
        iCounter = 0;
-       for (iLoopTemp = 0; (unsigned int)iLoopTemp < tTokens.size()-1; iLoopTemp += 2) {
+       for (iLoopTemp = 0; (unsigned int)iLoopTemp < tTokens.size()-1; iLoopTemp += 3) {
 	if (iCounter == 0) {
 	 sSendBuf = "PRIVMSG ";
 	 sSendBuf += qHLCommands[0].c_str()+1;
@@ -340,7 +340,10 @@ int forkParent() {
 	}
 	if (iCounter < 9) {
 	 sSendBuf += tTokens[iLoopTemp+1];
-	 if (iCounter < 8 && (unsigned int)iLoopTemp < tTokens.size()-2) {
+	 sSendBuf += " (";
+	 sSendBuf += tTokens[iLoopTemp+2];
+	 sSendBuf += ")";
+	 if (iCounter < 8 && (unsigned int)iLoopTemp < tTokens.size()-3) {
 	  sSendBuf += " ::: ";
 	 } else {
 	  sSendBuf += " ";
@@ -349,6 +352,9 @@ int forkParent() {
 	} else {
 	 sSendBuf += "::: ";
 	 sSendBuf += tTokens[iLoopTemp+1];
+	 sSendBuf += " (";
+	 sSendBuf += tTokens[iLoopTemp+2];
+	 sSendBuf += ")";
 	 sSendBuf += "\n";
 	 addQueue(sSendBuf, qIRC);
 	 sSendBuf = "";

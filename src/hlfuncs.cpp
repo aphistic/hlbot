@@ -2,7 +2,7 @@
 //
 // hlfuncs.cpp - Functions for HL server comm
 //
-// $Id: hlfuncs.cpp,v 1.1 2002/07/09 06:45:18 yodatoad Exp $
+// $Id: hlfuncs.cpp,v 1.2 2002/07/15 07:10:14 yodatoad Exp $
 
 // Copyright (C) 2002  Erik Davidson
 //
@@ -21,12 +21,15 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <iostream.h>
 #include <string.h>
 #include "config.h"
 
 char* hlParsePlayers(char* szHLPacket) {
  int iTotalPlayers = 0, iLoop = 0;
- char *ret, *szTWordP, *pkt;
+ int iHLPlayerFrags = 0;
+ char *ret, *szTWordP = NULL, *pkt, *szTFrag = NULL;
  
  if (szHLPacket[4] == 'D') {
   pkt = szHLPacket;
@@ -35,8 +38,10 @@ char* hlParsePlayers(char* szHLPacket) {
   pkt++;
   ret = new char[MAXRECVSIZE];
   szTWordP = new char[MAXRECVSIZE];
+  szTFrag = new char[33];
   memset(ret, '\0', MAXRECVSIZE);
   memset(szTWordP, '\0', MAXRECVSIZE);
+  memset(szTFrag, '\0', 33);
   if (pkt[0] == '\0')
    return NULL;
   for (iLoop = 0; iLoop < iTotalPlayers; iLoop++) {
@@ -50,16 +55,31 @@ char* hlParsePlayers(char* szHLPacket) {
    // Client Name
    strcat(ret, pkt);
    pkt += strlen(pkt);
+   strcat(ret, "\\");
+   iHLPlayerFrags = (int)*(pkt+1);
    pkt += 9;
+   sprintf(szTFrag, "%d", iHLPlayerFrags);
+   strcat(ret, szTFrag);
    
+   memset(szTFrag, '\0', 33);
    memset(szTWordP, '\0', MAXRECVSIZE);
 
    if (iLoop+1 < iTotalPlayers) {
     strcat(ret, "\\");
    }
   }
+  if (szTFrag != NULL)
+   delete [] szTFrag;
+  if (szTWordP != NULL)
+   delete [] szTWordP;
+  
   return ret;
  } else {
+  if (szTFrag != NULL)
+   delete [] szTFrag;
+  if (szTWordP != NULL) 
+   delete [] szTWordP;
+  
   return NULL;
  }
 }
